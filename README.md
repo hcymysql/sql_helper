@@ -19,10 +19,13 @@ sql_helper 工具是一个开源项目，其主要功能是自动判断条件字
 ### 使用
 ```
 shell> chmod 755 sql_helper
-shell> ./sql_helper -f test.yaml -q 'select * from sbtest1 limit 1;'
+shell> ./sql_helper -f test.yaml -q "select * from sbtest1 limit 1;"
+或者
+shell> sql_helper -f test.yaml -q "select（SQL太长可以直接回车分割）
+>  * from sbtest1 limit 10"
 ```
 
-注：test.yaml为MySQL配置文件
+注：test.yaml为MySQL配置文件，如果SQL里包含反引号，请直接去掉反引号。
 
 --sample参数：默认采样10万条数据（你可以在从库上获取样本数据），根据你的实际情况，适当增加采样数据，比如100-1000万行，这样工具会更精准的判断是否添加索引。
 
