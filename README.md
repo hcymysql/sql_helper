@@ -16,7 +16,7 @@ sql_helper 工具是一个开源项目，其主要功能是自动判断条件字
 
 第五步、检查group by和order by字段（同样的算法），之后与where条件字段合并，组合成联合索引。
 
-### 命令行方式使用  web端接口使用
+### 命令行方式使用 | [web端接口使用](https://github.com/hcymysql/sql_helper/blob/main/web/sql_helper/README.md)
 ```
 shell> chmod 755 sql_helper
 shell> ./sql_helper -f test.yaml -q "select * from sbtest1 limit 1;"
