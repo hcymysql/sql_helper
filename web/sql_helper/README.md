@@ -35,11 +35,16 @@ shell> chmod 755 sql_helper_args
 shell> mysql -uroot -p123456 < ./schema/sql_helper_schema.sql
 ```
 
-2）配置conn.php文件
+2）录入你线上的数据库信息（你可以填写从库信息）
+```
+mysql> insert into sql_helper.dbinfo values(1,'192.168.0.11','test','admin','123456',3306);
+```
+
+3）配置conn.php文件
 
 -- 改成你的sql_helper库连接信息
 
-3）页面访问
+4）页面访问
 
 http://yourIP/sql_helper/sql_helper.php
 
