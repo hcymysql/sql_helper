@@ -50,6 +50,14 @@ http://yourIP/sql_helper/sql_helper.php
 
 加一个超链接，可方便地接入你们的自动化运维平台里。
 
+![image](https://github.com/hcymysql/sql_helper/assets/19261879/5657b325-0e0e-460f-a9c7-9891f9730bb3)
+
+![image](https://github.com/hcymysql/sql_helper/assets/19261879/a00dac5b-1fe9-4e62-af05-9a019564298f)
+
+
+
+
+
 
 
 
