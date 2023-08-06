@@ -1,4 +1,4 @@
-### sql_helper Web端接口 - 加一个超链接，可方便地接入你们的自动化运维平台里。
+### sql_helper Web端接口
 
 一、环境搭建
 
@@ -15,14 +15,37 @@ sql_helper
 ├── conn.php
 ├── css
 │   └── bootstrap.min.css
+├── schema
+│   └── sql_helper_schema.sql
 ├── sql_helper_args
 ├── sql_helper.php
 └── sql_helper_result.php
 ```
 
+2）赋予sql_helper_args文件可执行权限
 ```
 shell> cd /var/www/html/sql_helper/
 shell> chmod 755 sql_helper_args
 ```
 
-2）
+二、sql_helper 网页端部署
+
+1）导入sql_helper工具表结构
+```
+shell> mysql -uroot -p123456 < ./schema/sql_helper_schema.sql
+```
+
+2）配置conn.php文件
+
+-- 改成你的sql_helper库连接信息
+
+3）页面访问
+
+http://yourIP/sql_helper/sql_helper.php
+
+加一个超链接，可方便地接入你们的自动化运维平台里。
+
+
+
+
+
