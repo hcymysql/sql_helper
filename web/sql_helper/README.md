@@ -52,10 +52,7 @@ http://yourIP/sql_helper/sql_helper.php
 
 ![image](https://github.com/hcymysql/sql_helper/assets/19261879/5657b325-0e0e-460f-a9c7-9891f9730bb3)
 
-![image](https://github.com/hcymysql/sql_helper/assets/19261879/a00dac5b-1fe9-4e62-af05-9a019564298f)
-
-
-
+![image](https://github.com/hcymysql/sql_helper/assets/19261879/1b9dfc6f-4542-406a-9cc4-0c61c44e80be)
 
 
 
