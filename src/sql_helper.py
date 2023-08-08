@@ -10,7 +10,6 @@ from sql_index import execute_index_query
 import yaml
 import argparse
 
-
 # 创建命令行参数解析器
 parser = argparse.ArgumentParser()
 # 添加-f/--file参数，用于指定db.yaml文件的路径
@@ -193,6 +192,10 @@ for row in explain_result:
                 index_columns = add_index_fields[0]
                 if row['key'] is None:
                     print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                elif row['key'] is not None and row['rows'] >= 1000:
+                    print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                else:
+                    print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_name}】表 【{index_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=index_columns)
                 print(index_static)
@@ -201,6 +204,10 @@ for row in explain_result:
                 merged_columns  = ','.join(add_index_fields)
                 if row['key'] is None:
                     print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                elif row['key'] is not None and row['rows'] >= 1000:
+                    print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                else:
+                    print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=merged_columns)
                 print(index_static)
@@ -262,6 +269,10 @@ for row in explain_result:
                 index_columns = add_index_fields[0]
                 if row['key'] is None:
                     print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                elif row['key'] is not None and row['rows'] >= 1000:
+                    print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                else:
+                    print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=index_columns)
                 print(index_static)
@@ -270,6 +281,10 @@ for row in explain_result:
                 merged_columns  = ','.join(add_index_fields)
                 if row['key'] is None:
                     print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                elif row['key'] is not None and row['rows'] >= 1000:
+                    print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                else:
+                    print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=merged_columns)
                 print(index_static)
