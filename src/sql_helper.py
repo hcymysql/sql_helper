@@ -6,6 +6,7 @@ from sql_metadata import Parser
 from sql_format_class import SQLFormatter
 from sql_alias import has_table_alias
 from sql_count_value import count_column_value
+from sql_index import execute_index_query
 import yaml
 import argparse
 
@@ -64,8 +65,6 @@ try:
     where_fields = data.get('where', [])
     order_by_fields = data.get('order_by', [])
     group_by_fields = data.get('group_by', [])
-    #print(f"表名：{table_names}")
-    #print(f"别名：{table_aliases}")
     if 'SELECT' not in sql_query.upper():
         print("sql_helper工具仅支持select语句")
         sys.exit(1)
@@ -133,6 +132,9 @@ if len(join_fields) != 0:
             if not index_result:
                 print("join联表查询，on关联字段必须增加索引！")
                 print(f"\033[91m需要添加索引：ALTER TABLE {table_name} ADD INDEX idx_{on_column}({on_column});\033[0m\n")
+                print(f"【{table_name}】表 【{on_column}】字段，索引分析：")
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=on_column)
+                print(index_static)
 
 # 解析执行计划，查找需要加索引的字段
 for row in explain_result:
@@ -180,15 +182,28 @@ for row in explain_result:
                         add_index_fields.append(order_field)
 
             if len(add_index_fields) == 0:
-                print("你的SQL太逆天，无需添加任何索引。")
+                if 'index_result' not in globals():
+                    print("你的SQL太逆天，无需添加任何索引。")
+                elif index_result:
+                    print("你的SQL太逆天，无需添加任何索引。")
+                else:
+                    pass
             elif len(add_index_fields) == 1:
                 index_name = add_index_fields[0]
                 index_columns = add_index_fields[0]
-                print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                if row['key'] is None:
+                    print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                print(f"\n【{table_name}】表 【{index_columns}】字段，索引分析：")
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=index_columns)
+                print(index_static)
             else:
                 merged_name = '_'.join(add_index_fields)
                 merged_columns  = ','.join(add_index_fields)
-                print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                if row['key'] is None:
+                    print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                print(f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：")
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=merged_columns)
+                print(index_static)
 
         # 判断表是否有别名，有别名的情况：
         if has_table_alias(table_aliases) is True:
@@ -236,15 +251,28 @@ for row in explain_result:
                         add_index_fields.append(order_field)
 
             if len(add_index_fields) == 0:
-                print("你的SQL太逆天，无需添加任何索引。")
+                if 'index_result' not in globals():
+                    print("你的SQL太逆天，无需添加任何索引。")
+                elif index_result:
+                    print("你的SQL太逆天，无需添加任何索引。")
+                else:
+                    pass
             elif len(add_index_fields) == 1:
                 index_name = add_index_fields[0]
                 index_columns = add_index_fields[0]
-                print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                if row['key'] is None:
+                    print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引分析：")
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=index_columns)
+                print(index_static)
             else:
                 merged_name = '_'.join(add_index_fields)
                 merged_columns  = ','.join(add_index_fields)
-                print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                if row['key'] is None:
+                    print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                print(f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：")
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=merged_columns)
+                print(index_static)
         
 # 关闭游标和连接
 cur.close()
