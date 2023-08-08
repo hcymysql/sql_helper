@@ -3,7 +3,12 @@ from tabulate import tabulate
 import pymysql
 
 def execute_index_query(mysql_settings, database, table_name, index_columns):
-    sql = f"select TABLE_NAME,INDEX_NAME,COLUMN_NAME,CARDINALITY from information_schema.STATISTICS where TABLE_SCHEMA = '{database}' AND  TABLE_NAME = '{table_name}' AND COLUMN_NAME = '{index_columns}'"
+    index_columns = index_columns
+    index_columns = index_columns.split(',')
+    updated_columns = [f"'{column.strip()}'" for column in index_columns]
+    final_columns = ', '.join(updated_columns)
+    sql = f"select TABLE_NAME,INDEX_NAME,COLUMN_NAME,CARDINALITY from information_schema.STATISTICS where TABLE_SCHEMA = '{database}' AND  TABLE_NAME = '{table_name}' AND COLUMN_NAME IN ({final_columns})"
+    #print(sql)
     try:
         conn = pymysql.connect(**mysql_settings)
         cur = conn.cursor()
