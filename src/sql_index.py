@@ -16,7 +16,7 @@ def execute_index_query(mysql_settings, database, table_name, index_columns):
         index_result = cur.fetchall()
 
         if not index_result:
-            pass
+            print(f"没有检测到 {table_name} 表 字段 {final_columns} 有索引。")
 
         # 提取列名
         e_column_names = [desc[0] for desc in cur.description]
@@ -32,6 +32,33 @@ def execute_index_query(mysql_settings, database, table_name, index_columns):
         e_table = tabulate(e_result_values, headers=e_column_names, tablefmt="grid", numalign="left")
 
         return e_table
+
+    except pymysql.err.ProgrammingError as e:
+        print("MySQL 内部错误：",e)
+        return None
+    except Exception as e:
+        print("MySQL 内部错误：",e)
+        return None
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
+#########################################################
+
+def check_index_exist(mysql_settings, table_name, index_column):
+    show_index_sql = f"show index from {table_name} where Column_name = '{index_column}'"
+    try:
+        conn = pymysql.connect(**mysql_settings)
+        cur = conn.cursor()
+        cur.execute(show_index_sql)
+        index_result = cur.fetchall()
+
+        #if not index_result:
+            #print(f"没有检测到 {table_name} 表 字段 {final_columns} 有索引。")
+
+        return index_result
 
     except pymysql.err.ProgrammingError as e:
         print("MySQL 内部错误：",e)

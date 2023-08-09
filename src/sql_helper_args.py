@@ -6,7 +6,7 @@ from sql_metadata import Parser
 from sql_format_class import SQLFormatter
 from sql_alias import has_table_alias
 from sql_count_value import count_column_value
-from sql_index import execute_index_query
+from sql_index import execute_index_query,check_index_exist
 import argparse
 
 # 创建命令行参数解析器
@@ -198,10 +198,14 @@ for row in explain_result:
             elif len(add_index_fields) == 1:
                 index_name = add_index_fields[0]
                 index_columns = add_index_fields[0]
-                if row['key'] is None:
-                    print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                elif row['key'] is not None and row['rows'] >= 1000:
-                    print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                index_result = check_index_exist(mysql_settings, table_name=table_name, index_column=index_columns)
+                if not index_result:
+                    if row['key'] is None:
+                        print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                    elif row['key'] is not None and row['rows'] >= 1000:
+                        print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                    elif row['key'] is not None and row['rows'] <= 1000:
+                        print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
                     print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_name}】表 【{index_columns}】字段，索引分析：")
@@ -214,6 +218,8 @@ for row in explain_result:
                     print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                 elif row['key'] is not None and row['rows'] >= 1000:
                     print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                elif row['key'] is not None and row['rows'] <= 1000:
+                    print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
                     print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：")
@@ -275,10 +281,14 @@ for row in explain_result:
             elif len(add_index_fields) == 1:
                 index_name = add_index_fields[0]
                 index_columns = add_index_fields[0]
-                if row['key'] is None:
-                    print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                elif row['key'] is not None and row['rows'] >= 1000:
-                    print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                index_result = check_index_exist(mysql_settings, table_name=table_real_name, index_column=index_columns)
+                if not index_result:
+                    if row['key'] is None:
+                        print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                    elif row['key'] is not None and row['rows'] >= 1000:
+                        print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                    elif row['key'] is not None and row['rows'] <= 1000:
+                        print(f"你的表 {table_real_name} 大小，加索引意义不大。")
                 else:
                     print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引分析：")
@@ -291,6 +301,8 @@ for row in explain_result:
                     print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                 elif row['key'] is not None and row['rows'] >= 1000:
                     print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                elif row['key'] is not None and row['rows'] <= 1000:
+                    print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
                     print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：")
