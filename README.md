@@ -16,6 +16,19 @@ sql_helper 工具是一个开源项目，其主要功能是自动判断条件字
 
 第五步、检查group by和order by字段（同样的算法），之后与where条件字段合并，组合成联合索引。
 
+    需要注意的是：sql_helper工具假定您的sql语句条件表达式都为and的前提下，提示创建联合索引。
+    
+    如果是or，sql解析器解析起来会有些困难(sql灵活多变，不固定，无法用通用的算法组合字段)。
+  
+    例如where c1 = 1 or c2 = 2
+  
+    工具会提示(c1,c2)创建一个联合索引，但实际上应该单独对c1和c2创建一个独立索引。
+  
+    即select ... from t where c = 1
+    union all
+    select ... from t where c = 2
+
+
 ### 命令行方式使用 | [web端接口使用](https://github.com/hcymysql/sql_helper/blob/main/web/sql_helper/README.md)
 ```
 shell> chmod 755 sql_helper
