@@ -26,9 +26,9 @@ sql_helper 工具是一个开源项目，其主要功能是自动判断条件字
   
     工具会提示(c1,c2)创建一个联合索引，但实际上应该单独对c1和c2创建一个独立索引。
   
-    即select ... from t where c = 1
+    即select ... from t where c1 = 1
     union all
-    select ... from t where c = 2
+    select ... from t where c2 = 2
 
 
 ### 命令行方式使用 | [web端接口使用](https://github.com/hcymysql/sql_helper/blob/main/web/sql_helper/README.md)
