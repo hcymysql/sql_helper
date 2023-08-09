@@ -6,7 +6,7 @@ from sql_metadata import Parser
 from sql_format_class import SQLFormatter
 from sql_alias import has_table_alias
 from sql_count_value import count_column_value
-from sql_index import execute_index_query,check_index_exist
+from sql_index import execute_index_query,check_index_exist,check_index_exist_multi
 import yaml
 import argparse
 
@@ -180,6 +180,9 @@ for row in explain_result:
                     else:
                         add_index_fields.append(order_field)
 
+            # add_index_fields = list(set(add_index_fields)) # 字段名如果一样，则去重
+            add_index_fields = list(dict.fromkeys(add_index_fields).keys()) # 字段名如果一样，则去重，并确保元素的位置不发生改变
+
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
                     print("你的SQL太逆天，无需添加任何索引。")
@@ -204,10 +207,12 @@ for row in explain_result:
             else:
                 merged_name = '_'.join(add_index_fields)
                 merged_columns  = ','.join(add_index_fields)
-                if row['key'] is None:
-                    print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                elif row['key'] is not None and row['rows'] >= 1000:
-                    print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                index_result_list = check_index_exist_multi(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=merged_columns,index_number=len(add_index_fields))
+                if index_result_list is None:
+                    if row['key'] is None:
+                        print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                    elif row['key'] is not None and row['rows'] >= 1000:
+                        print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                 else:
                     print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：")
@@ -259,6 +264,9 @@ for row in explain_result:
                     else:
                         add_index_fields.append(order_field)
 
+            #add_index_fields = list(set(add_index_fields))  # 字段名如果一样，则去重
+            add_index_fields = list(dict.fromkeys(add_index_fields).keys())  # 字段名如果一样，则去重，并确保元素的位置不发生改变
+
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
                     print("你的SQL太逆天，无需添加任何索引。")
@@ -285,12 +293,14 @@ for row in explain_result:
             else:
                 merged_name = '_'.join(add_index_fields)
                 merged_columns  = ','.join(add_index_fields)
-                if row['key'] is None:
-                    print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                elif row['key'] is not None and row['rows'] >= 1000:
-                    print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                elif row['key'] is not None and row['rows'] <= 1000:
-                    print(f"你的表 {table_name} 大小，加索引意义不大。")
+                index_result_list = check_index_exist_multi(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=merged_columns,index_number=len(add_index_fields))
+                if index_result_list is None:
+                    if row['key'] is None:
+                        print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                    elif row['key'] is not None and row['rows'] >= 1000:
+                        print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                    elif row['key'] is not None and row['rows'] <= 1000:
+                        print(f"你的表 {table_real_name} 大小，加索引意义不大。")
                 else:
                     print("你的SQL太逆天，无需添加任何索引。")
                 print(f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：")

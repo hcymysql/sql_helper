@@ -7,7 +7,7 @@ def execute_index_query(mysql_settings, database, table_name, index_columns):
     index_columns = index_columns.split(',')
     updated_columns = [f"'{column.strip()}'" for column in index_columns]
     final_columns = ', '.join(updated_columns)
-    sql = f"select TABLE_NAME,INDEX_NAME,COLUMN_NAME,CARDINALITY from information_schema.STATISTICS where TABLE_SCHEMA = '{database}' AND  TABLE_NAME = '{table_name}' AND COLUMN_NAME IN ({final_columns})"
+    sql = f"SELECT TABLE_NAME,INDEX_NAME,COLUMN_NAME,CARDINALITY FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = '{database}' AND TABLE_NAME = '{table_name}' AND COLUMN_NAME IN ({final_columns})"
     #print(sql)
     try:
         conn = pymysql.connect(**mysql_settings)
@@ -71,3 +71,36 @@ def check_index_exist(mysql_settings, table_name, index_column):
             cur.close()
         if conn:
             conn.close()
+
+#########################################################
+
+def check_index_exist_multi(mysql_settings, database, table_name, index_columns, index_number):
+    index_columns = index_columns
+    index_columns = index_columns.split(',')
+    updated_columns = [f"'{column.strip()}'" for column in index_columns]
+    final_columns = ', '.join(updated_columns)
+    sql = f"SELECT TABLE_NAME,INDEX_NAME,COLUMN_NAME,CARDINALITY FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = '{database}' AND TABLE_NAME = '{table_name}' AND COLUMN_NAME IN ({final_columns}) GROUP BY INDEX_NAME HAVING COUNT(INDEX_NAME) = {index_number}"
+    #print(sql)
+    try:
+        conn = pymysql.connect(**mysql_settings)
+        cur = conn.cursor()
+        cur.execute(sql)
+        index_result = cur.fetchall()
+
+        if not index_result:
+            return None
+
+        return index_result
+
+    except pymysql.err.ProgrammingError as e:
+        print("MySQL 内部错误：",e)
+        return None
+    except Exception as e:
+        print("MySQL 内部错误：",e)
+        return None
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
