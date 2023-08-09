@@ -1,4 +1,4 @@
-### sql_helper Web端接口
+### sql_helper Web端接口（适用于Centos7 系统）
 
 一、环境搭建
 
