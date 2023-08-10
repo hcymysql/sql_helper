@@ -50,7 +50,7 @@ for token in stmt.tokens:
                 found = True
 
             if found:
-                if isinstance(cond_tok, sqlparse.sql.Token) and cond_tok.value.upper() == "OR":
+                if isinstance(cond_tok, sqlparse.sql.Token) and cond_tok.value.upper() in ["OR","AND"]:
                     break
                 else:
                     result += cond_tok.value
