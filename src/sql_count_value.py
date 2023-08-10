@@ -9,7 +9,27 @@ def count_column_value(table_name, field_name, mysql_settings, sample_size):
             (SELECT COUNT(*) FROM {table_name}) / 2
             作为阈值，即表的实际大小除以2；否则使用 {sample_size} / 2 作为阈值。
             """
-            
+
+            # 如果你的数据库是MySQL 8.0，那么推荐用 CTE（公共表达式）的形式
+            '''
+            sql = f"""
+            WITH subquery AS (
+                SELECT {field_name}
+                FROM {table_name}
+                LIMIT {sample_size}
+            )
+            SELECT COUNT(*) as count
+            FROM subquery
+            GROUP BY {field_name}
+            HAVING COUNT(*) >= 
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM subquery) < {sample_size} THEN (SELECT COUNT(*) FROM {table_name}) / 2 
+                    ELSE {sample_size} / 2 
+                END;
+            """
+            '''
+
+            # 默认采用子查询兼容MySQL 5.7版本
             sql = f"""
             SELECT COUNT(*) as count
             FROM (
@@ -21,6 +41,7 @@ def count_column_value(table_name, field_name, mysql_settings, sample_size):
             HAVING COUNT(*) >= CASE WHEN (SELECT COUNT(*) FROM {table_name} LIMIT {sample_size}) < {sample_size} 
             THEN (SELECT COUNT(*) FROM {table_name}) / 2 ELSE {sample_size} / 2 END;
             """
+
             #print(sql)
             cursor.execute(sql)
 
@@ -31,5 +52,3 @@ def count_column_value(table_name, field_name, mysql_settings, sample_size):
         return results
     else:
         return False
-
-
