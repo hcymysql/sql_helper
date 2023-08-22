@@ -149,7 +149,9 @@ for row in explain_result:
     table_name = row['table']
     add_index_fields = []
     # 判断是否需要加索引的条件
-    if (row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1000:
+    #if (row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1:
+    # 2023-08-22日更新：修复join多表关联后，where条件表达式字段判断不全。
+    if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)) or (len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1000)):
         # 判断表是否有别名，没有别名的情况：
         if has_table_alias(table_aliases) is False:
             if len(where_fields) != 0:
@@ -193,9 +195,9 @@ for row in explain_result:
 
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
-                    print("你的SQL太逆天，无需添加任何索引。")
+                    print(f"\n【{table_name}】 表，无需添加任何索引。")
                 elif index_result:
-                    print("你的SQL太逆天，无需添加任何索引。")
+                    print(f"\n【{table_name}】 表，无需添加任何索引。")
                 else:
                     pass
             elif len(add_index_fields) == 1:
@@ -207,10 +209,10 @@ for row in explain_result:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
                     elif row['key'] is not None and row['rows'] >= 1000:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] <= 1000:
-                        print(f"你的表 {table_name} 大小，加索引意义不大。")
+                    #elif row['key'] is not None and row['rows'] <= 1000:
+                        #print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
-                    print("你的SQL太逆天，无需添加任何索引。")
+                    print(f"\n【{table_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。")
                 print(f"\n【{table_name}】表 【{index_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=index_columns)
                 print(index_static)
@@ -223,10 +225,10 @@ for row in explain_result:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                     elif row['key'] is not None and row['rows'] >= 1000:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] <= 1000:
-                        print(f"你的表 {table_name} 大小，加索引意义不大。")
+                    #elif row['key'] is not None and row['rows'] <= 1000:
+                        #print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
-                    print("你的SQL太逆天，无需添加任何索引。")
+                    print(f"\n{table_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。")
                 print(f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=merged_columns)
                 print(index_static)
@@ -259,7 +261,7 @@ for row in explain_result:
                     if Cardinality:
                         count_value = Cardinality[0]['count']
                         print(
-                            f"取出表 【{table_name}】 group by条件字段 【{group_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                            f"取出表 【{table_real_name}】 group by条件字段 【{group_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(group_field)
 
@@ -272,7 +274,7 @@ for row in explain_result:
                     Cardinality = count_column_value(table_real_name, order_field, mysql_settings, sample_size)
                     if Cardinality:
                         count_value = Cardinality[0]['count']
-                        print(f"取出表 【{table_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        print(f"取出表 【{table_real_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(order_field)
 
@@ -281,9 +283,9 @@ for row in explain_result:
 
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
-                    print("你的SQL太逆天，无需添加任何索引。")
+                    print(f"\n【{table_real_name}】 表，无需添加任何索引。")
                 elif index_result:
-                    print("你的SQL太逆天，无需添加任何索引。")
+                    print(f"\n【{table_real_name}】 表，无需添加任何索引。")
                 else:
                     pass
             elif len(add_index_fields) == 1:
@@ -295,10 +297,10 @@ for row in explain_result:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
                     elif row['key'] is not None and row['rows'] >= 1000:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] <= 1000:
-                        print(f"你的表 {table_real_name} 大小，加索引意义不大。")
+                    #elif row['key'] is not None and row['rows'] <= 1000:
+                        #print(f"你的表 {table_real_name} 大小，加索引意义不大。")
                 else:
-                    print("你的SQL太逆天，无需添加任何索引。")
+                    print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。")
                 print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=index_columns)
                 print(index_static)
@@ -311,10 +313,10 @@ for row in explain_result:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                     elif row['key'] is not None and row['rows'] >= 1000:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] <= 1000:
-                        print(f"你的表 {table_name} 大小，加索引意义不大。")
+                    #elif row['key'] is not None and row['rows'] <= 1000:
+                        #print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
-                    print("你的SQL太逆天，无需添加任何索引。")
+                    print(f"\n【{table_real_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。")
                 print(f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=merged_columns)
                 print(index_static)
@@ -322,3 +324,4 @@ for row in explain_result:
 # 关闭游标和连接
 cur.close()
 conn.close()
+
