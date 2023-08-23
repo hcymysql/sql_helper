@@ -52,7 +52,7 @@ sql_query = args.sql
 # 获取样本数据行数
 sample_size = args.sample
 
-print("你刚才输入的SQL语句是：")
+print("\n1)你刚才输入的SQL语句是：")
 print("-" * 100)
 # 美化SQL
 formatter = SQLFormatter()
@@ -108,10 +108,12 @@ for row in explain_result:
 # 将结果格式化为表格（包含竖线）
 e_table = tabulate(e_result_values, headers=e_column_names, tablefmt="grid", numalign="left")
 
-print()
-print("EXPLAIN执行计划:")
+print("\n")
+print("2) EXPLAIN执行计划:")
 print(e_table)
-print()
+print("\n")
+print("3) 索引优化建议：")
+print("-" * 100)
 ###########################################################################
 
 # 判断有无where条件
@@ -195,9 +197,9 @@ for row in explain_result:
 
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
-                    print(f"\n【{table_name}】 表，无需添加任何索引。")
+                    print(f"\n\u2192 \033[1;92m【{table_name}】 表，无需添加任何索引。033[0m\n")
                 elif index_result:
-                    print(f"\n【{table_name}】 表，无需添加任何索引。")
+                    print(f"\n\u2192 \033[1;92m【{table_name}】 表，无需添加任何索引。033[0m\n")
                 else:
                     pass
             elif len(add_index_fields) == 1:
@@ -283,9 +285,9 @@ for row in explain_result:
 
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
-                    print(f"\n【{table_real_name}】 表，无需添加任何索引。")
+                    print(f"\n\u2192 \033[1;92m【{table_real_name}】 表，无需添加任何索引。033[0m\n")
                 elif index_result:
-                    print(f"\n【{table_real_name}】 表，无需添加任何索引。")
+                    print(f"\n\u2192 \033[1;92m【{table_real_name}】 表，无需添加任何索引。033[0m\n")
                 else:
                     pass
             elif len(add_index_fields) == 1:
@@ -324,4 +326,5 @@ for row in explain_result:
 # 关闭游标和连接
 cur.close()
 conn.close()
+
 
