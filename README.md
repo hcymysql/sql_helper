@@ -48,7 +48,7 @@ shell> sql_helper -f test.yaml -q "select（SQL太长可以直接回车分割）
 
 仅支持SELECT查询（主要针对慢日志里的SQL）
 
-![image](https://github.com/hcymysql/sql_helper/assets/19261879/937178c0-9cef-47fd-ba4c-05001ac219ad)
+![image](https://github.com/hcymysql/sql_helper/assets/19261879/a603a7fd-7163-4c05-a5fd-4e605f02acc5)
 
 请注意，自动判断是否增加索引只是一个辅助功能，最终的决策还应该根据具体的业务需求和数据库性能优化的考虑来进行。此外，索引的创建和维护需要谨慎操作，需要考虑数据量、查询频率、更新频率等因素，以避免对数据库性能产生负面影响。
 
