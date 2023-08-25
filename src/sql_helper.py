@@ -204,10 +204,11 @@ for row in explain_result:
                     elif row['key'] is not None and row['rows'] >= 1000:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
                 else:
-                    print(f"\n【{table_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。")
+                    print(f"\n\u2192 \033[1;92m【{table_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_name}】表 【{index_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=index_columns)
                 print(index_static)
+                print()
             else:
                 merged_name = '_'.join(add_index_fields)
                 merged_columns  = ','.join(add_index_fields)
@@ -218,10 +219,11 @@ for row in explain_result:
                     elif row['key'] is not None and row['rows'] >= 1000:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                 else:
-                    print(f"\n{table_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。")
+                    print(f"\n\u2192 \033[1;92m【{table_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=merged_columns)
                 print(index_static)
+                print()
 
         # 判断表是否有别名，有别名的情况：
         if has_table_alias(table_aliases) is True:
@@ -290,10 +292,11 @@ for row in explain_result:
                     #elif row['key'] is not None and row['rows'] <= 1000:
                         #print(f"你的表 {table_real_name} 大小，加索引意义不大。")
                 else:
-                    print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。")
+                    print(f"\n\u2192 \033[1;92m【{table_real_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=index_columns)
                 print(index_static)
+                print()
             else:
                 merged_name = '_'.join(add_index_fields)
                 merged_columns  = ','.join(add_index_fields)
@@ -306,13 +309,12 @@ for row in explain_result:
                     #elif row['key'] is not None and row['rows'] <= 1000:
                         #print(f"你的表 {table_real_name} 大小，加索引意义不大。")
                 else:
-                    print(f"\n【{table_real_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。")
+                    print(f"\n\u2192 \033[1;92m【{table_real_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：")
                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=merged_columns)
                 print(index_static)
+                print()
         
 # 关闭游标和连接
 cur.close()
 conn.close()
-
-
