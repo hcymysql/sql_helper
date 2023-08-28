@@ -116,9 +116,12 @@ print("3) 索引优化建议：")
 print("-" * 100)
 ###########################################################################
 
+contains_dot = False
 # 判断有无where条件
 if len(where_fields) == 0:
     print(f"你的SQL没有where条件.")
+else:
+    contains_dot = any('.' in field for field in where_fields)
 
 # 判断如果SQL里包含on，检查on后面的字段是否有索引。
 if len(join_fields) != 0:
@@ -155,11 +158,11 @@ for row in explain_result:
     # 2023-08-22日更新：修复join多表关联后，where条件表达式字段判断不全。
     if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)) or (len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1000)):
         # 判断表是否有别名，没有别名的情况：
-        if has_table_alias(table_aliases) is False:
+        if has_table_alias(table_aliases) is False and contains_dot is False:
             if len(where_fields) != 0:
-                contains_dot = any('.' in field for field in where_fields)
-                if contains_dot:  # 包含点（表名.字段名）
-                    where_fields = [field.split('.')[-1] for field in where_fields if field.startswith(table_name + ".")]
+                # contains_dot = any('.' in field for field in where_fields)
+                # if contains_dot:  # 包含点（表名.字段名）
+                #     where_fields = [field.split('.')[-1] for field in where_fields if field.startswith(table_name + ".")]
                 for where_field in where_fields:
                     Cardinality = count_column_value(table_name, where_field, mysql_settings, sample_size)
                     if Cardinality:
@@ -169,9 +172,9 @@ for row in explain_result:
                         add_index_fields.append(where_field)
 
             if group_by_fields is not None and len(group_by_fields) != 0:
-                contains_dot = any('.' in field for field in group_by_fields)
-                if contains_dot:  # 包含点（表名.字段名）
-                    group_by_fields = [field.split('.')[-1] for field in group_by_fields if field.startswith(table_name + ".")]
+                # contains_dot = any('.' in field for field in group_by_fields)
+                # if contains_dot:  # 包含点（表名.字段名）
+                #     group_by_fields = [field.split('.')[-1] for field in group_by_fields if field.startswith(table_name + ".")]
                 for group_field in group_by_fields:
                     Cardinality = count_column_value(table_name, group_field, mysql_settings, sample_size)
                     if Cardinality:
@@ -181,9 +184,9 @@ for row in explain_result:
                         add_index_fields.append(group_field)
 
             if len(order_by_fields) != 0:
-                contains_dot = any('.' in field for field in order_by_fields)
-                if contains_dot:  # 包含点（表名.字段名）
-                    order_by_fields = [field.split('.')[-1] for field in order_by_fields if field.startswith(table_name + ".")]
+                # contains_dot = any('.' in field for field in order_by_fields)
+                # if contains_dot:  # 包含点（表名.字段名）
+                #     order_by_fields = [field.split('.')[-1] for field in order_by_fields if field.startswith(table_name + ".")]
                 for order_field in order_by_fields:
                     Cardinality = count_column_value(table_name, order_field, mysql_settings, sample_size)
                     if Cardinality:
@@ -238,8 +241,11 @@ for row in explain_result:
                 print()
 
         # 判断表是否有别名，有别名的情况：
-        if has_table_alias(table_aliases) is True:
-            table_real_name = table_aliases[table_name]
+        if has_table_alias(table_aliases) is True or contains_dot is True:
+            if has_table_alias(table_aliases) is True:
+                table_real_name = table_aliases[table_name]
+            else:
+                table_real_name = table_name
 
             if len(where_fields) != 0:
                 where_matching_fields = []
