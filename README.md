@@ -50,6 +50,17 @@ shell> sql_helper -f test.yaml -q "select（SQL太长可以直接回车分割）
 
 仅支持SELECT查询（主要针对慢日志里的SQL）
 
+### Docker方式使用
+```
+shell> docker pull docker.io/hcymysql/sql_helper
+shell> docker run -itd --name sql_helper <IMAGE ID> /bin/bash
+shell> docker exec -it <CONTAINER ID> /root/sql_helper -h
+shell> docker cp test.yaml sql_helper:/root/
+shell> docker exec -it sql_helper /root/sql_helper -f /root/test.yaml -q "select * from t1 where cid=11"
+或
+shell> docker exec -it sql_helper /root/sql_helper_args -H 192.168.198.239 -P 6666 -u admin -p hechunyang -d test -q "select * from t1 where cid=11"
+```
+
 ![image](https://github.com/hcymysql/sql_helper/assets/19261879/a603a7fd-7163-4c05-a5fd-4e605f02acc5)
 
 ![image](https://github.com/hcymysql/sql_helper/assets/19261879/39da7b69-aebb-4c27-ac18-f0abc497064d)
