@@ -30,7 +30,7 @@ $result = mysqli_query($conn,$get_db_ip);
 
 list($ip,$dbname,$user,$pwd,$port) = mysqli_fetch_array($result);
 
-$command = "./sql_helper_args -H $ip -P $port -u $user -p $pwd -d $dbname -q \"$get_sql\" --sample 100000";  //采集的数据越多，判断索引是否增加的概率就越高，默认采集10万条数据。
+$command = "./sql_helper_args -H $ip -P $port -u $user -p '$pwd' -d $dbname -q \"$get_sql\" --sample 100000";  //采集的数据越多，判断索引是否增加的概率就越高，默认采集10万条数据。
 
 // 调用命令并获取输出结果
 $output = shell_exec($command);
