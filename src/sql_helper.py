@@ -269,7 +269,10 @@ for row in explain_result:
                         where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
                         prefix = where_clause_value.split('.')[0]
                         where_clause_value = where_clause_value.replace(prefix + '.', '')
-                        Cardinality = count_column_clause_value(table_real_name, where_field, where_clause_value, mysql_settings, sample_size)
+                        if "." in where_clause_value:
+                            Cardinality = count_column_value(table_real_name, where_field, mysql_settings, sample_size)
+                        else:
+                            Cardinality = count_column_clause_value(table_real_name, where_field, where_clause_value, mysql_settings, sample_size)
                     else:
                         Cardinality = count_column_value(table_real_name, where_field, mysql_settings, sample_size)
                     if Cardinality:
