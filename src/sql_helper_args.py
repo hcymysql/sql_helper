@@ -5,8 +5,9 @@ import pymysql
 from sql_metadata import Parser
 from sql_format_class import SQLFormatter
 from sql_alias import has_table_alias
-from sql_count_value import count_column_value
+from sql_count_value import count_column_value, count_column_clause_value
 from sql_index import execute_index_query,check_index_exist,check_index_exist_multi
+from where_clause import parse_where_condition # 1.1版本-新增where条件表达式值
 import argparse
 
 # 创建命令行参数解析器
@@ -32,6 +33,7 @@ parser.add_argument("-q", "--sql", required=True, help="SQL query")
 
 # 添加--sample参数，默认值为100000，表示10万行
 parser.add_argument("--sample", default=100000, type=int, help="Number of rows to sample (default: 100000)")
+parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.1，更新日期：2023-09-05')
 
 # 解析命令行参数
 args = parser.parse_args()
@@ -164,17 +166,26 @@ for row in explain_result:
                 # if contains_dot:  # 包含点（表名.字段名）
                 #     where_fields = [field.split('.')[-1] for field in where_fields if field.startswith(table_name + ".")]
                 for where_field in where_fields:
-                    Cardinality = count_column_value(table_name, where_field, mysql_settings, sample_size)
+                    # 1.1版本-新增where条件表达式值
+                    where_clause_value = parse_where_condition(formatted_sql, where_field)
+                    if where_clause_value is not None:
+                        where_clause_value = where_clause_value.replace('\n', '').replace('\r', '')
+                        where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
+                        Cardinality = count_column_clause_value(table_name, where_field, where_clause_value, mysql_settings, sample_size)
+                    else:
+                        Cardinality = count_column_value(table_name, where_field, mysql_settings, sample_size)
                     if Cardinality:
                         count_value = Cardinality[0]['count']
-                        print(f"取出表 【{table_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        if where_clause_value is not None:
+                            print(
+                                f"取出表 【{table_name}】 where条件表达式 【{where_clause_value}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        else:
+                            print(
+                                f"取出表 【{table_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(where_field)
 
             if group_by_fields is not None and len(group_by_fields) != 0:
-                # contains_dot = any('.' in field for field in group_by_fields)
-                # if contains_dot:  # 包含点（表名.字段名）
-                #     group_by_fields = [field.split('.')[-1] for field in group_by_fields if field.startswith(table_name + ".")]
                 for group_field in group_by_fields:
                     Cardinality = count_column_value(table_name, group_field, mysql_settings, sample_size)
                     if Cardinality:
@@ -184,9 +195,6 @@ for row in explain_result:
                         add_index_fields.append(group_field)
 
             if len(order_by_fields) != 0:
-                # contains_dot = any('.' in field for field in order_by_fields)
-                # if contains_dot:  # 包含点（表名.字段名）
-                #     order_by_fields = [field.split('.')[-1] for field in order_by_fields if field.startswith(table_name + ".")]
                 for order_field in order_by_fields:
                     Cardinality = count_column_value(table_name, order_field, mysql_settings, sample_size)
                     if Cardinality:
@@ -253,10 +261,24 @@ for row in explain_result:
                     if field.startswith(table_real_name + '.'):
                         where_matching_fields.append(field.split('.')[1])
                 for where_field in where_matching_fields:
-                    Cardinality = count_column_value(table_real_name, where_field, mysql_settings, sample_size)
+                    # 1.1版本-新增where条件表达式值
+                    talia_clause = table_name + '.' + where_field
+                    where_clause_value = parse_where_condition(formatted_sql, talia_clause)
+                    if where_clause_value is not None:
+                        where_clause_value = where_clause_value.replace('\n', '').replace('\r', '')
+                        where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
+                        prefix = where_clause_value.split('.')[0]
+                        where_clause_value = where_clause_value.replace(prefix + '.', '')
+                        Cardinality = count_column_clause_value(table_real_name, where_field, where_clause_value, mysql_settings, sample_size)
+                    else:
+                        Cardinality = count_column_value(table_real_name, where_field, mysql_settings, sample_size)
                     if Cardinality:
                         count_value = Cardinality[0]['count']
-                        print(
+                        if where_clause_value is not None:
+                            print(
+                            f"取出表 【{table_real_name}】 where条件表达式 【{where_clause_value}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        else:
+                            print(
                             f"取出表 【{table_real_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(where_field)
