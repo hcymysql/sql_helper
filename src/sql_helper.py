@@ -1,12 +1,13 @@
-import sys,re
+import sys, re
 import textwrap
 from tabulate import tabulate
 import pymysql
 from sql_metadata import Parser
 from sql_format_class import SQLFormatter
 from sql_alias import has_table_alias
-from sql_count_value import count_column_value
-from sql_index import execute_index_query,check_index_exist,check_index_exist_multi
+from sql_count_value import count_column_value, count_column_clause_value
+from sql_index import execute_index_query, check_index_exist, check_index_exist_multi
+from where_clause import parse_where_condition # 1.1版本-新增where条件表达式值
 import yaml
 import argparse
 
@@ -15,9 +16,10 @@ parser = argparse.ArgumentParser()
 # 添加-f/--file参数，用于指定db.yaml文件的路径
 parser.add_argument("-f", "--file", required=True, help="Path to db.yaml file")
 # 添加--sql参数
-parser.add_argument("-q","--sql", required=True, help="SQL query")
+parser.add_argument("-q", "--sql", required=True, help="SQL query")
 # 添加--sample参数，默认值为100000，表示10万行
 parser.add_argument("--sample", default=100000, type=int, help="Number of rows to sample (default: 100000)")
+parser.add_argument('-v', '--version', action='version', version='sql_helper工具版本号: 1.1.1，更新日期：2023-09-05')
 
 # 解析命令行参数
 args = parser.parse_args()
@@ -57,13 +59,13 @@ print("-" * 100)
 try:
     parser = Parser(sql_query)
     table_names = parser.tables
-    #print(f"表名是: {table_names}")
+    # print(f"表名是: {table_names}")
     table_aliases = parser.tables_aliases
     data = parser.columns_dict
     select_fields = data.get('select', [])
     join_fields = data.get('join', [])
     where_fields = data.get('where', [])
-    #print(f"WHERE字段是：{where_fields}")
+    # print(f"WHERE字段是：{where_fields}")
     order_by_fields = data.get('order_by', [])
     group_by_fields = data.get('group_by', [])
     if 'SELECT' not in sql_query.upper():
@@ -81,10 +83,10 @@ sql = f"EXPLAIN {sql_query}"
 try:
     cur.execute(sql)
 except pymysql.err.ProgrammingError as e:
-    print("MySQL 内部错误：",e)
+    print("MySQL 内部错误：", e)
     sys.exit(1)
 except Exception as e:
-    print("MySQL 内部错误：",e)
+    print("MySQL 内部错误：", e)
     sys.exit(1)
 explain_result = cur.fetchall()
 
@@ -138,7 +140,8 @@ if len(join_fields) != 0:
                 print("join联表查询，on关联字段必须增加索引！")
                 print(f"\033[91m需要添加索引：ALTER TABLE {table_name} ADD INDEX idx_{on_column}({on_column});\033[0m\n")
                 print(f"【{table_name}】表 【{on_column}】字段，索引分析：")
-                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=on_column)
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
+                                                   table_name=table_name, index_columns=on_column)
                 print(index_static)
 
 # 解析执行计划，查找需要加索引的字段
@@ -147,52 +150,55 @@ for row in explain_result:
     table_name = row['table']
     add_index_fields = []
     # 判断是否需要加索引的条件
-    #if (row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1000:
+    # if (row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1000:
     # 2023-08-22日更新：修复join多表关联后，where条件表达式字段判断不全。
-    if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)) or (len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1000)):
+    if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)) or (
+            len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1000)):
         # 判断表是否有别名，没有别名的情况：
         if has_table_alias(table_aliases) is False and contains_dot is False:
             if len(where_fields) != 0:
-                # contains_dot = any('.' in field for field in where_fields)
-                # if contains_dot:  # 包含点（表名.字段名）
-                #     #where_fields = [field.split('.')[-1] for field in where_fields if field.startswith(table_name + ".")]
-                #     where_fields = [field.split('.')[-1] for field in where_fields if any(field.startswith(table) for table in table_names)]
-                #     #where_fields = [field.split('.')[-1] for field in where_fields if field.split('.')[-2] == table_name]
                 for where_field in where_fields:
-                    Cardinality = count_column_value(table_name, where_field, mysql_settings, sample_size)
-                    #print(f"Cardinality: {Cardinality}")
+                    # 1.1版本-新增where条件表达式值
+                    where_clause_value = parse_where_condition(formatted_sql, where_field)
+                    if where_clause_value is not None:
+                        where_clause_value = where_clause_value.replace('\n', '').replace('\r', '')
+                        where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
+                        Cardinality = count_column_clause_value(table_name, where_field, where_clause_value, mysql_settings, sample_size)
+                    else:
+                        Cardinality = count_column_value(table_name, where_field, mysql_settings, sample_size)
                     if Cardinality:
                         count_value = Cardinality[0]['count']
-                        print(f"取出表 【{table_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        if where_clause_value is not None:
+                            print(
+                                f"取出表 【{table_name}】 where条件表达式 【{where_clause_value}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        else:
+                            print(
+                                f"取出表 【{table_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(where_field)
 
             if group_by_fields is not None and len(group_by_fields) != 0:
-                # contains_dot = any('.' in field for field in group_by_fields)
-                # if contains_dot:  # 包含点（表名.字段名）
-                #     group_by_fields = [field.split('.')[-1] for field in group_by_fields if field.startswith(table_name + ".")]
                 for group_field in group_by_fields:
                     Cardinality = count_column_value(table_name, group_field, mysql_settings, sample_size)
                     if Cardinality:
                         count_value = Cardinality[0]['count']
-                        print(f"取出表 【{table_name}】 group by条件字段 【{group_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        print(
+                            f"取出表 【{table_name}】 group by条件字段 【{group_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(group_field)
 
             if len(order_by_fields) != 0:
-                # contains_dot = any('.' in field for field in order_by_fields)
-                # if contains_dot:  # 包含点（表名.字段名）
-                #     order_by_fields = [field.split('.')[-1] for field in order_by_fields if field.startswith(table_name + ".")]
                 for order_field in order_by_fields:
                     Cardinality = count_column_value(table_name, order_field, mysql_settings, sample_size)
                     if Cardinality:
                         count_value = Cardinality[0]['count']
-                        print(f"取出表 【{table_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        print(
+                            f"取出表 【{table_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(order_field)
 
             # add_index_fields = list(set(add_index_fields)) # 字段名如果一样，则去重
-            add_index_fields = list(dict.fromkeys(add_index_fields).keys()) # 字段名如果一样，则去重，并确保元素的位置不发生改变
+            add_index_fields = list(dict.fromkeys(add_index_fields).keys())  # 字段名如果一样，则去重，并确保元素的位置不发生改变
 
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
@@ -207,28 +213,36 @@ for row in explain_result:
                 index_result = check_index_exist(mysql_settings, table_name=table_name, index_column=index_columns)
                 if not index_result:
                     if row['key'] is None:
-                        print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                        print(
+                            f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
                     elif row['key'] is not None and row['rows'] >= 1000:
-                        print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                        print(
+                            f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
                 else:
                     print(f"\n\u2192 \033[1;92m【{table_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_name}】表 【{index_columns}】字段，索引分析：")
-                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=index_columns)
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
+                                                   table_name=table_name, index_columns=index_columns)
                 print(index_static)
                 print()
             else:
                 merged_name = '_'.join(add_index_fields)
-                merged_columns  = ','.join(add_index_fields)
-                index_result_list = check_index_exist_multi(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=merged_columns,index_number=len(add_index_fields))
+                merged_columns = ','.join(add_index_fields)
+                index_result_list = check_index_exist_multi(mysql_settings, database=mysql_settings["database"],
+                                                            table_name=table_name, index_columns=merged_columns,
+                                                            index_number=len(add_index_fields))
                 if index_result_list is None:
                     if row['key'] is None:
-                        print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                        print(
+                            f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                     elif row['key'] is not None and row['rows'] >= 1000:
-                        print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                        print(
+                            f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                 else:
                     print(f"\n\u2192 \033[1;92m【{table_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：")
-                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_name, index_columns=merged_columns)
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
+                                                   table_name=table_name, index_columns=merged_columns)
                 print(index_static)
                 print()
 
@@ -247,10 +261,24 @@ for row in explain_result:
                 # print(f"where_fields: {where_fields}")
                 # print(f"where_matching_fields: {where_matching_fields}")
                 for where_field in where_matching_fields:
-                    Cardinality = count_column_value(table_real_name, where_field, mysql_settings, sample_size)
+                    # 1.1版本-新增where条件表达式值
+                    talia_clause = table_name + '.' + where_field
+                    where_clause_value = parse_where_condition(formatted_sql, talia_clause)
+                    if where_clause_value is not None:
+                        where_clause_value = where_clause_value.replace('\n', '').replace('\r', '')
+                        where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
+                        prefix = where_clause_value.split('.')[0]
+                        where_clause_value = where_clause_value.replace(prefix + '.', '')
+                        Cardinality = count_column_clause_value(table_real_name, where_field, where_clause_value, mysql_settings, sample_size)
+                    else:
+                        Cardinality = count_column_value(table_real_name, where_field, mysql_settings, sample_size)
                     if Cardinality:
                         count_value = Cardinality[0]['count']
-                        print(
+                        if where_clause_value is not None:
+                            print(
+                            f"取出表 【{table_real_name}】 where条件表达式 【{where_clause_value}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        else:
+                            print(
                             f"取出表 【{table_real_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(where_field)
@@ -278,11 +306,12 @@ for row in explain_result:
                     Cardinality = count_column_value(table_real_name, order_field, mysql_settings, sample_size)
                     if Cardinality:
                         count_value = Cardinality[0]['count']
-                        print(f"取出表 【{table_real_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
+                        print(
+                            f"取出表 【{table_real_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。")
                     else:
                         add_index_fields.append(order_field)
 
-            #add_index_fields = list(set(add_index_fields))  # 字段名如果一样，则去重
+            # add_index_fields = list(set(add_index_fields))  # 字段名如果一样，则去重
             add_index_fields = list(dict.fromkeys(add_index_fields).keys())  # 字段名如果一样，则去重，并确保元素的位置不发生改变
 
             if len(add_index_fields) == 0:
@@ -298,35 +327,43 @@ for row in explain_result:
                 index_result = check_index_exist(mysql_settings, table_name=table_real_name, index_column=index_columns)
                 if not index_result:
                     if row['key'] is None:
-                        print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                        print(
+                            f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
                     elif row['key'] is not None and row['rows'] >= 1000:
-                        print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    #elif row['key'] is not None and row['rows'] <= 1000:
-                        #print(f"你的表 {table_real_name} 大小，加索引意义不大。")
+                        print(
+                            f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
+                    # elif row['key'] is not None and row['rows'] <= 1000:
+                    # print(f"你的表 {table_real_name} 大小，加索引意义不大。")
                 else:
                     print(f"\n\u2192 \033[1;92m【{table_real_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引分析：")
-                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=index_columns)
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
+                                                   table_name=table_real_name, index_columns=index_columns)
                 print(index_static)
                 print()
             else:
                 merged_name = '_'.join(add_index_fields)
-                merged_columns  = ','.join(add_index_fields)
-                index_result_list = check_index_exist_multi(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=merged_columns,index_number=len(add_index_fields))
+                merged_columns = ','.join(add_index_fields)
+                index_result_list = check_index_exist_multi(mysql_settings, database=mysql_settings["database"],
+                                                            table_name=table_real_name, index_columns=merged_columns,
+                                                            index_number=len(add_index_fields))
                 if index_result_list is None:
                     if row['key'] is None:
-                        print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                        print(
+                            f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                     elif row['key'] is not None and row['rows'] >= 1000:
-                        print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    #elif row['key'] is not None and row['rows'] <= 1000:
-                        #print(f"你的表 {table_real_name} 大小，加索引意义不大。")
+                        print(
+                            f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
+                    # elif row['key'] is not None and row['rows'] <= 1000:
+                    # print(f"你的表 {table_real_name} 大小，加索引意义不大。")
                 else:
                     print(f"\n\u2192 \033[1;92m【{table_real_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：")
-                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"], table_name=table_real_name, index_columns=merged_columns)
+                index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
+                                                   table_name=table_real_name, index_columns=merged_columns)
                 print(index_static)
                 print()
-        
+
 # 关闭游标和连接
 cur.close()
 conn.close()
