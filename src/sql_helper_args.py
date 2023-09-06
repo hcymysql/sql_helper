@@ -8,6 +8,7 @@ from sql_alias import has_table_alias
 from sql_count_value import count_column_value, count_column_clause_value
 from sql_index import execute_index_query,check_index_exist,check_index_exist_multi
 from where_clause import parse_where_condition # 1.1版本-新增where条件表达式值
+from sql_extra import *
 import argparse
 
 # 创建命令行参数解析器
@@ -33,7 +34,7 @@ parser.add_argument("-q", "--sql", required=True, help="SQL query")
 
 # 添加--sample参数，默认值为100000，表示10万行
 parser.add_argument("--sample", default=100000, type=int, help="Number of rows to sample (default: 100000)")
-parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.1，更新日期：2023-09-05')
+parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.2，更新日期：2023-09-06')
 
 # 解析命令行参数
 args = parser.parse_args()
@@ -118,6 +119,7 @@ print("3) 索引优化建议：")
 print("-" * 100)
 ###########################################################################
 
+where_clause_list = []
 contains_dot = False
 # 判断有无where条件
 if len(where_fields) == 0:
@@ -171,6 +173,7 @@ for row in explain_result:
                     if where_clause_value is not None:
                         where_clause_value = where_clause_value.replace('\n', '').replace('\r', '')
                         where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
+                        where_clause_list.append(where_clause_value)
                         Cardinality = count_column_clause_value(table_name, where_field, where_clause_value, mysql_settings, sample_size)
                     else:
                         Cardinality = count_column_value(table_name, where_field, mysql_settings, sample_size)
@@ -269,6 +272,7 @@ for row in explain_result:
                         where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
                         prefix = where_clause_value.split('.')[0]
                         where_clause_value = where_clause_value.replace(prefix + '.', '')
+                        where_clause_list.append(where_clause_value)
                         if "." in where_clause_value:
                             Cardinality = count_column_value(table_real_name, where_field, mysql_settings, sample_size)
                         else:
@@ -361,3 +365,12 @@ for row in explain_result:
 # 关闭游标和连接
 cur.close()
 conn.close()
+
+print("\n")
+print("4) 额外的建议：")
+print("-" * 100)
+
+for wc in where_clause_list:
+    like_r = check_percent_position(wc)
+    if like_r is True:
+        print("like模糊匹配，百分号在首位，是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，如果业务上不能改，可以考虑用全文索引。")
