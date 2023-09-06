@@ -7,7 +7,7 @@ from sql_format_class import SQLFormatter
 from sql_alias import has_table_alias
 from sql_count_value import count_column_value, count_column_clause_value
 from sql_index import execute_index_query, check_index_exist, check_index_exist_multi
-from where_clause import parse_where_condition # 1.1版本-新增where条件表达式值
+from where_clause import * # 1.1版本-新增where条件表达式值
 from sql_extra import *
 import yaml
 import argparse
@@ -112,7 +112,6 @@ print("3) 索引优化建议：")
 print("-" * 100)
 ###########################################################################
 
-where_clause_list = []
 contains_dot = False
 # 判断有无where条件
 if len(where_fields) == 0:
@@ -165,7 +164,6 @@ for row in explain_result:
                     if where_clause_value is not None:
                         where_clause_value = where_clause_value.replace('\n', '').replace('\r', '')
                         where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
-                        where_clause_list.append(where_clause_value)
                         Cardinality = count_column_clause_value(table_name, where_field, where_clause_value, mysql_settings, sample_size)
                     else:
                         Cardinality = count_column_value(table_name, where_field, mysql_settings, sample_size)
@@ -272,7 +270,6 @@ for row in explain_result:
                         where_clause_value = re.sub(r'\s+', ' ', where_clause_value)
                         prefix = where_clause_value.split('.')[0]
                         where_clause_value = where_clause_value.replace(prefix + '.', '')
-                        where_clause_list.append(where_clause_value)
                         if "." in where_clause_value:
                             Cardinality = count_column_value(table_real_name, where_field, mysql_settings, sample_size)
                         else:
@@ -379,7 +376,13 @@ print("\n")
 print("4) 额外的建议：")
 print("-" * 100)
 
-for wc in where_clause_list:
-    like_r = check_percent_position(wc)
+where_clause = parse_where_condition_full(formatted_sql)
+if where_clause:
+    like_r = check_percent_position(where_clause)
     if like_r is True:
-        print("like模糊匹配，百分号在首位，是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，如果业务上不能改，可以考虑用全文索引。")
+        print("a) like模糊匹配，百分号在首位，是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，如果业务上不能改，可以考虑用全文索引。\n")
+
+    function_r = extract_function_index(where_clause)
+    if function_r is not False:
+        print(f"b) WHERE子句条件字段使用了函数索引：{function_r}，是不能用到索引的。"
+              f"如果你是MySQL 8.0可以考虑创建函数索引；如果你是MySQL 5.7，你要更改你的SQL逻辑了。\n")
