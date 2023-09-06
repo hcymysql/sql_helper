@@ -1,6 +1,5 @@
 import sqlparse
 
-
 class SQLFormatter:
     def format_sql(self, sql_query):
         """
