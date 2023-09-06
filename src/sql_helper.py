@@ -378,11 +378,12 @@ print("-" * 100)
 
 where_clause = parse_where_condition_full(formatted_sql)
 if where_clause:
-    like_r = check_percent_position(where_clause)
+    like_r, like_expression = check_percent_position(where_clause)
     if like_r is True:
-        print("a) like模糊匹配，百分号在首位，是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，如果业务上不能改，可以考虑用全文索引。\n")
+        print(f"like模糊匹配，百分号在首位，【{like_expression}】是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，"
+              f"如果业务上不能改，可以考虑用全文索引。\n")
 
     function_r = extract_function_index(where_clause)
     if function_r is not False:
-        print(f"b) WHERE子句条件字段使用了函数索引：{function_r}，是不能用到索引的。"
+        print(f"索引列使用了函数作计算：【{function_r}】，会导致索引失效。"
               f"如果你是MySQL 8.0可以考虑创建函数索引；如果你是MySQL 5.7，你要更改你的SQL逻辑了。\n")

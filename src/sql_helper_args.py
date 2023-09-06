@@ -316,9 +316,9 @@ for row in explain_result:
 
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
-                    print(f"\n\u2192 \033[1;92m【{table_real_name}】 表，无需添加任何索引。033[0m\n")
+                    print(f"\n\u2192 \033[1;92m【{table_real_name}】 表，无需添加任何索引。\033[0m\n")
                 elif index_result:
-                    print(f"\n\u2192 \033[1;92m【{table_real_name}】 表，无需添加任何索引。033[0m\n")
+                    print(f"\n\u2192 \033[1;92m【{table_real_name}】 表，无需添加任何索引。\033[0m\n")
                 else:
                     pass
             elif len(add_index_fields) == 1:
@@ -366,11 +366,12 @@ print("-" * 100)
 
 where_clause = parse_where_condition_full(formatted_sql)
 if where_clause:
-    like_r = check_percent_position(where_clause)
+    like_r, like_expression = check_percent_position(where_clause)
     if like_r is True:
-        print("a) like模糊匹配，百分号在首位，是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，如果业务上不能改，可以考虑用全文索引。\n")
+        print(f"like模糊匹配，百分号在首位，【{like_expression}】是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，"
+              f"如果业务上不能改，可以考虑用全文索引。\n")
 
     function_r = extract_function_index(where_clause)
     if function_r is not False:
-        print(f"b) WHERE子句条件字段使用了函数索引：{function_r}，是不能用到索引的。"
+        print(f"索引列使用了函数作计算：【{function_r}】，会导致索引失效。"
               f"如果你是MySQL 8.0可以考虑创建函数索引；如果你是MySQL 5.7，你要更改你的SQL逻辑了。\n")
