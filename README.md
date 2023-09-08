@@ -69,3 +69,5 @@ shell> docker exec -it sql_helper /root/sql_helper_args -H 192.168.198.239 -P 66
 请注意，自动判断是否增加索引只是一个辅助功能，最终的决策还应该根据具体的业务需求和数据库性能优化的考虑来进行。此外，索引的创建和维护需要谨慎操作，需要考虑数据量、查询频率、更新频率等因素，以避免对数据库性能产生负面影响。
 
 工具适用于Centos7 系统
+
+# 8.0默认是caching_sha2_password用户认证，需要更改为 mysql_native_password
