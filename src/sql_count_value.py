@@ -1,4 +1,5 @@
 import pymysql
+from rich.progress import Progress, TimeElapsedColumn, TextColumn, BarColumn
 
 def count_column_value(table_name, field_name, mysql_settings, sample_size):
     with pymysql.connect(**mysql_settings) as conn:
@@ -42,7 +43,10 @@ def count_column_value(table_name, field_name, mysql_settings, sample_size):
             """
 
             # print(sql)
-            cursor.execute(sql)
+            with Progress(TextColumn("[progress.description]{task.description}", justify="right"), BarColumn(), TextColumn("[progress.percentage]{task.percentage:>3.0f}%"), TimeElapsedColumn()) as progress:
+                task = progress.add_task(f"[cyan]Executing SQL query [bold magenta]{table_name}[/bold magenta] [cyan]where_clause [bold magenta]{field_name}[/bold magenta]...", total=1)
+                cursor.execute(sql)
+                progress.update(task, completed=1)
 
             results = cursor.fetchall()
 
@@ -97,7 +101,10 @@ def count_column_clause_value(table_name, field_name, where_clause_value, mysql_
             """
 
             #print(sql)
-            cursor.execute(sql)
+            with Progress(TextColumn("[progress.description]{task.description}", justify="right"), BarColumn(), TextColumn("[progress.percentage]{task.percentage:>3.0f}%"), TimeElapsedColumn()) as progress:
+                task = progress.add_task(f"[cyan]Executing SQL query [bold magenta]{table_name}[/bold magenta] [cyan]where_clause [bold magenta]{where_clause_value}[/bold magenta]...", total=1)
+                cursor.execute(sql)
+                progress.update(task, completed=1)
 
             results = cursor.fetchall()
 
