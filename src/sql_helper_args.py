@@ -206,9 +206,9 @@ for row in explain_result:
 
             if len(add_index_fields) == 0:
                 if 'index_result' not in globals():
-                    print(f"\n\u2192 \033[1;92m【{table_name}】 表，无需添加任何索引。033[0m\n")
+                    print(f"\n\u2192 \033[1;92m【{table_name}】 表，无需添加任何索引。\033[0m\n")
                 elif index_result:
-                    print(f"\n\u2192 \033[1;92m【{table_name}】 表，无需添加任何索引。033[0m\n")
+                    print(f"\n\u2192 \033[1;92m【{table_name}】 表，无需添加任何索引。\033[0m\n")
                 else:
                     pass
             elif len(add_index_fields) == 1:
