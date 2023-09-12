@@ -20,7 +20,7 @@ parser.add_argument("-f", "--file", required=True, help="Path to db.yaml file")
 parser.add_argument("-q", "--sql", required=True, help="SQL query")
 # 添加--sample参数，默认值为100000，表示10万行
 parser.add_argument("--sample", default=100000, type=int, help="Number of rows to sample (default: 100000)")
-parser.add_argument('-v', '--version', action='version', version='sql_helper工具版本号: 1.1.2，更新日期：2023-09-06')
+parser.add_argument('-v', '--version', action='version', version='sql_helper工具版本号: 1.1.3，更新日期：2023-09-12')
 
 # 解析命令行参数
 args = parser.parse_args()
@@ -377,13 +377,14 @@ print("4) 额外的建议：")
 print("-" * 100)
 
 where_clause = parse_where_condition_full(formatted_sql)
+#print(f"where子句：{where_clause}")
 if where_clause:
     like_r, like_expression = check_percent_position(where_clause)
     if like_r is True:
-        print(f"like模糊匹配，百分号在首位，【{like_expression}】是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，"
-              f"如果业务上不能改，可以考虑用全文索引。\n")
+        print(f"like模糊匹配，百分号在首位，【{like_expression}】是不能用到索引的，例如like '%张三%'，可以考虑改成like '张三%'，这样是可以用到索引的，如果业务上不能改，可以考虑用全文索引。\n")
 
     function_r = extract_function_index(where_clause)
     if function_r is not False:
         print(f"索引列使用了函数作计算：【{function_r}】，会导致索引失效。"
               f"如果你是MySQL 8.0可以考虑创建函数索引；如果你是MySQL 5.7，你要更改你的SQL逻辑了。\n")
+

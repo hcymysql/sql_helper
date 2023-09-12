@@ -34,7 +34,7 @@ parser.add_argument("-q", "--sql", required=True, help="SQL query")
 
 # 添加--sample参数，默认值为100000，表示10万行
 parser.add_argument("--sample", default=100000, type=int, help="Number of rows to sample (default: 100000)")
-parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.2，更新日期：2023-09-06')
+parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.3，更新日期：2023-09-12')
 
 # 解析命令行参数
 args = parser.parse_args()
@@ -375,3 +375,4 @@ if where_clause:
     if function_r is not False:
         print(f"索引列使用了函数作计算：【{function_r}】，会导致索引失效。"
               f"如果你是MySQL 8.0可以考虑创建函数索引；如果你是MySQL 5.7，你要更改你的SQL逻辑了。\n")
+
