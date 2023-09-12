@@ -35,6 +35,8 @@ sql_helper 工具是一个开源项目，其主要功能是自动判断条件字
 
 ![image](https://github.com/hcymysql/sql_helper/assets/19261879/ca3d23a7-f2d3-4a14-80af-3688e2bb061e)
 
+演示：https://www.douyin.com/video/7277857326072122676
+
 ### 命令行方式使用 | [web端接口使用](https://github.com/hcymysql/sql_helper/blob/main/web/sql_helper/README.md)
 ```
 shell> chmod 755 sql_helper
