@@ -34,7 +34,7 @@ parser.add_argument("-q", "--sql", required=True, help="SQL query")
 
 # 添加--sample参数，默认值为100000，表示10万行
 parser.add_argument("--sample", default=100000, type=int, help="Number of rows to sample (default: 100000)")
-parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.3，更新日期：2023-09-12')
+parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.4，更新日期：2023-09-14')
 
 # 解析命令行参数
 args = parser.parse_args()
@@ -159,7 +159,7 @@ for row in explain_result:
     # 判断是否需要加索引的条件
     #if (row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1:
     # 2023-08-22日更新：修复join多表关联后，where条件表达式字段判断不全。
-    if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)) or (len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1000)):
+    if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)) or (len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)):
         # 判断表是否有别名，没有别名的情况：
         if has_table_alias(table_aliases) is False and contains_dot is False:
             if len(where_fields) != 0:
@@ -218,10 +218,8 @@ for row in explain_result:
                 if not index_result:
                     if row['key'] is None:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] >= 1000:
+                    elif row['key'] is not None and row['rows'] >= 1:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    #elif row['key'] is not None and row['rows'] <= 1000:
-                        #print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
                     print(f"\n\u2192 \033[1;92m【{table_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_name}】表 【{index_columns}】字段，索引分析：")
@@ -235,10 +233,8 @@ for row in explain_result:
                 if index_result_list is None:
                     if row['key'] is None:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] >= 1000:
+                    elif row['key'] is not None and row['rows'] >= 1:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    #elif row['key'] is not None and row['rows'] <= 1000:
-                        #print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
                     print(f"\n\u2192 \033[1;92m【{table_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：")
@@ -328,10 +324,8 @@ for row in explain_result:
                 if not index_result:
                     if row['key'] is None:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] >= 1000:
+                    elif row['key'] is not None and row['rows'] >= 1:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    #elif row['key'] is not None and row['rows'] <= 1000:
-                        #print(f"你的表 {table_real_name} 大小，加索引意义不大。")
                 else:
                     print(f"\n\u2192 \033[1;92m【{table_real_name}】表 【{index_columns}】字段，索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_real_name}】表 【{index_columns}】字段，索引分析：")
@@ -345,10 +339,8 @@ for row in explain_result:
                 if index_result_list is None:
                     if row['key'] is None:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] >= 1000:
+                    elif row['key'] is not None and row['rows'] >= 1:
                         print(f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    #elif row['key'] is not None and row['rows'] <= 1000:
-                        #print(f"你的表 {table_name} 大小，加索引意义不大。")
                 else:
                     print(f"\n\u2192 \033[1;92m【{table_real_name}】表 【{merged_columns}】字段，联合索引已经存在，无需添加任何索引。\033[0m")
                 print(f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：")
@@ -375,4 +367,3 @@ if where_clause:
     if function_r is not False:
         print(f"索引列使用了函数作计算：【{function_r}】，会导致索引失效。"
               f"如果你是MySQL 8.0可以考虑创建函数索引；如果你是MySQL 5.7，你要更改你的SQL逻辑了。\n")
-
