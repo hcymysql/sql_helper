@@ -34,7 +34,7 @@ parser.add_argument("-q", "--sql", required=True, help="SQL query")
 
 # 添加--sample参数，默认值为100000，表示10万行
 parser.add_argument("--sample", default=100000, type=int, help="Number of rows to sample (default: 100000)")
-parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.4，更新日期：2023-09-14')
+parser.add_argument('-v', '--version', action='version', version='sql_helper_args工具版本号: 1.1.5，更新日期：2023-11-27')
 
 # 解析命令行参数
 args = parser.parse_args()
@@ -159,7 +159,7 @@ for row in explain_result:
     # 判断是否需要加索引的条件
     #if (row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1:
     # 2023-08-22日更新：修复join多表关联后，where条件表达式字段判断不全。
-    if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)) or (len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or row['rows'] >= 1)):
+    if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or int(row['rows']) >= 1)) or (len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or int(row['rows']) >= 1000)):
         # 判断表是否有别名，没有别名的情况：
         if has_table_alias(table_aliases) is False and contains_dot is False:
             if len(where_fields) != 0:
