@@ -1,10 +1,15 @@
 # sql_helper - 输入SQL自动判断条件字段是否增加索引
 
-# ★贡献：ThinkSQL 类似 ThinkPHP 的数据库引擎，集成sql_helper
-# ※ThinkSQL地址： https://pypi.org/project/think-sql/
+#### sqlai_helper工具版本号: 2.1.1，更新日期：2024-01-31 <-> 支持SQL改写，合并LLM模型接口
+https://github.com/hcymysql/sql_helper/releases/tag/sqlai_helper
+
+```
+#### ★贡献：ThinkSQL 类似 ThinkPHP 的数据库引擎，集成sql_helper
+#### ※ThinkSQL地址： https://pypi.org/project/think-sql/
 
 #### 2023-09-05日更新：1.1.1版本-新增where条件表达式值判断，索引推荐更加精准。
 #### 2023-09-06日更新：1.1.2版本-新增额外的建议：like模糊匹配检查、索引列使用了函数作计算
+```
 
 索引在数据库中非常重要，它可以加快查询速度并提高数据库性能。对于经常被用作查询条件的字段，添加索引可以显著改善查询效率。然而，索引的创建和维护需要考虑多个因素，包括数据量、查询频率、更新频率等。
 
