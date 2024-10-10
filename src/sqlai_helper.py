@@ -197,7 +197,7 @@ if len(join_fields) != 0:
 for row in explain_result:
     # 获取查询语句涉及的表和字段信息
     table_name = row['table']
-    if table_name.startswith('<derived2'):
+    if table_name.lower().startswith('<derived'):
         table_name = ""
 
     # 如果 table_name 是空字符串，跳过后续处理
