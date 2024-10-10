@@ -1,5 +1,5 @@
 host: 192.168.198.239
-port: 3336
+port: 3306
 user: admin
-passwd: hechunyang
-database: hcy
+passwd: 123456
+database: test
