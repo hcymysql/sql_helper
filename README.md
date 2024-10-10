@@ -1,9 +1,9 @@
 # sql_helper - 输入SQL自动判断条件字段是否增加索引
 
 #### sqlai_helper工具版本号: 2.1.3，更新日期：2024-10-10 <-> 支持SQL改写，合并LLM模型接口
-链接：https://pan.baidu.com/s/1vQDX8xazb3Vaj_Qu2TF38g 
+链接：https://pan.baidu.com/s/1UJ14bjoNrlmAuwIdsSohiw 
 
-提取码：za49
+提取码：pipy
 ```
 #### ★贡献：ThinkSQL 类似 ThinkPHP 的数据库引擎，集成sql_helper
 #### ※ThinkSQL地址： https://pypi.org/project/think-sql/
