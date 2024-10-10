@@ -2,7 +2,7 @@ from vanna.remote import VannaDefault
 
 def optimize_sql(original_sql):
     # 创建 VannaDefault 实例
-    vn = VannaDefault(model='sql_helper', api_key='8a373d683b884ca9a583dbdd864c9bce')
+    vn = VannaDefault(model='sql_helper', api_key='xxxxxxxxxxxxxxxxxxxx')
 
     # 输出调用信息
     print('以下是调用的vanna.ai LLM接口.')
