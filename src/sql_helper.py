@@ -152,7 +152,10 @@ for row in explain_result:
     add_index_fields = []
     # 判断是否需要加索引的条件
     # 2023-08-22日更新：修复join多表关联后，where条件表达式字段判断不全。
-    if (len(join_fields) != 0 and ((row['type'] == 'ALL' and row['key'] is None) or int(row['rows']) >= 1)) or (len(join_fields) == 0 and ((row['type'] == 'ALL' and row['key'] is None) or int(row['rows']) >= 1000)):
+    if (row['type'] == 'ALL' and row['key'] is None) or (
+        isinstance(row['rows'], int)
+        and row['rows'] >= (1 if len(join_fields) != 0 else 1000)
+    ):
         # 判断表是否有别名，没有别名的情况：
         if has_table_alias(table_aliases) is False and contains_dot is False:
             if len(where_fields) != 0:
@@ -211,10 +214,7 @@ for row in explain_result:
                 index_columns = add_index_fields[0]
                 index_result = check_index_exist(mysql_settings, table_name=table_name, index_column=index_columns)
                 if not index_result:
-                    if row['key'] is None:
-                        print(
-                            f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] >= 1:
+                    if row['key'] is None or (isinstance(row['rows'],int) and row['rows'] >= 1):
                         print(
                             f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
                 else:
@@ -231,10 +231,7 @@ for row in explain_result:
                                                             table_name=table_name, index_columns=merged_columns,
                                                             index_number=len(add_index_fields))
                 if index_result_list is None:
-                    if row['key'] is None:
-                        print(
-                            f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] >= 1:
+                    if row['key'] is None or (isinstance(row['rows'],int) and row['rows'] >= 1):
                         print(
                             f"\033[93m建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                 else:
@@ -328,10 +325,7 @@ for row in explain_result:
                 index_columns = add_index_fields[0]
                 index_result = check_index_exist(mysql_settings, table_name=table_real_name, index_column=index_columns)
                 if not index_result:
-                    if row['key'] is None:
-                        print(
-                            f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] >= 1:
+                    if row['key'] is None or (isinstance(row['rows'],int) and row['rows'] >= 1):
                         print(
                             f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});\033[0m")
                 else:
@@ -348,10 +342,7 @@ for row in explain_result:
                                                             table_name=table_real_name, index_columns=merged_columns,
                                                             index_number=len(add_index_fields))
                 if index_result_list is None:
-                    if row['key'] is None:
-                        print(
-                            f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
-                    elif row['key'] is not None and row['rows'] >= 1:
+                    if row['key'] is None or (isinstance(row['rows'],int) and row['rows'] >= 1):
                         print(
                             f"\033[93m建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});\033[0m")
                 else:
