@@ -1,5 +1,9 @@
 from vanna.remote import VannaDefault
 
+"""
+pip3 install vanna==0.0.36 -i "http://mirrors.aliyun.com/pypi/simple" --trusted-host "mirrors.aliyun.com"
+"""
+
 def optimize_sql(original_sql):
     # 创建 VannaDefault 实例
     vn = VannaDefault(model='sql_helper', api_key='xxxxxxxxxxxxxxxxxxxx')
