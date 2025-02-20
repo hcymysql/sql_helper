@@ -2,7 +2,8 @@
 
 #### 2025年2月20日更新：sqlai_helper 增加 Flask，无需部署PHP，可直接访问。
 ```
-# python3 app.py
+shell> pip3 install -r requirements.txt -i "http://mirrors.aliyun.com/pypi/simple" --trusted-host "mirrors.aliyun.com"
+shell> python3 app.py
 
  * Serving Flask app 'app'
  * Debug mode: on
