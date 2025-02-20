@@ -17,6 +17,8 @@ Press CTRL+C to quit
  * Debugger PIN: 135-657-056
 ```
 
+![image](https://github.com/user-attachments/assets/f66d977b-8948-4990-be58-d9647a0f6906)
+
 #### sqlai_helper工具版本号: 2.1.3，更新日期：2024-10-10 <-> 支持SQL改写，合并LLM模型接口
 链接： https://github.com/hcymysql/sql_helper/releases/tag/sqlai_helper_v2.1.3
 ```
