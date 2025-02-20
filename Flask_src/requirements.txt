@@ -1,0 +1,8 @@
+Flask
+PyMySQL
+sql-metadata
+tabulate
+rich
+PyYAML
+vanna==0.0.36
+sqlparse
