@@ -1,5 +1,21 @@
 # sql_helper - 输入SQL自动判断条件字段是否增加索引
 
+#### 2025年2月20日更新：sqlai_helper 增加 Flask，无需部署PHP，可直接访问。
+```
+# python3 app.py
+
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.137.131:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 135-657-056
+```
+
 #### sqlai_helper工具版本号: 2.1.3，更新日期：2024-10-10 <-> 支持SQL改写，合并LLM模型接口
 链接： https://github.com/hcymysql/sql_helper/releases/tag/sqlai_helper_v2.1.3
 ```
