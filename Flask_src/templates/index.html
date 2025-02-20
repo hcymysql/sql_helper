@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>SQLAI Helper 工具</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f1f1f1;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 900px;
+            padding: 30px;
+            margin-top: -30px;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        /* Input fields and labels */
+        .config-box {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .config-box label {
+            font-weight: bold;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Input fields in one line */
+        .inline-inputs {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .inline-inputs input {
+            width: 50%; /* Set width to fit inputs in the same row */
+        }
+
+        .config-box textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .button-container {
+            text-align: center;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Output boxes */
+        .output-box {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .suggestion {
+            color: darkorange;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            color: red;
+        }
+        .ai-suggestion {
+            color: green;
+        }
+        .success-suggestion {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SQLAI Helper 工具</h1>
+
+        <div class="config-box">
+            <form method="post">
+                <label for="sql_query">输入 SQL 查询语句:</label>
+                <textarea id="sql_query" name="sql_query" placeholder="请输入 SQL 查询语句">{{ sql_query or '' }}</textarea>
+
+                <p><strong>数据库连接配置</strong> (手动填写数据库参数)</p>
+
+                <div class="inline-inputs">
+                    <div>
+                        <label for="host">MySQL 主机名:</label>
+                        <input type="text" id="host" name="host" placeholder="MySQL 主机名" value="{{ host or '' }}">
+                    </div>
+                    <div>
+                        <label for="port">MySQL 端口:</label>
+                        <input type="number" id="port" name="port" placeholder="MySQL 端口 (默认: 3306)" value="{{ port or 3306 }}">
+                    </div>
+                    <div>
+                        <label for="user">MySQL 用户名:</label>
+                        <input type="text" id="user" name="user" placeholder="MySQL 用户名" value="{{ user or '' }}">
+                    </div>
+                    <div>
+                        <label for="password">MySQL 密码:</label>
+                        <input type="password" id="password" name="password" placeholder="MySQL 密码" value="{{ password or '' }}">
+                    </div>
+                    <div>
+                        <label for="database">数据库名:</label>
+                        <input type="text" id="database" name="database" placeholder="数据库名" value="{{ database or '' }}">
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <br>
+                    <button type="submit">分析 SQL</button>
+                </div>
+            </form>
+        </div>
+
+        {% if error %}
+        <div class="output-box error">
+            <p><strong>错误信息:</strong></p>
+            <pre>{{ error }}</pre>
+        </div>
+        {% endif %}
+
+        {% if formatted_sql %}
+        <div class="output-box">
+            <p class="section-title">1) 你刚才输入的 SQL 语句是:</p>
+            <pre>{{ formatted_sql }}</pre>
+        </div>
+        {% endif %}
+
+        {% if explain_table %}
+        <div class="output-box">
+            <p class="section-title">2) EXPLAIN 执行计划:</p>
+            <pre>{{ explain_table }}</pre>
+        </div>
+        {% endif %}
+
+        {% if index_suggestions %}
+        <div class="output-box">
+            <p class="section-title">3) 索引优化建议:</p>
+            <pre class="suggestion">{{ index_suggestions }}</pre>
+        </div>
+        {% endif %}
+
+        <div class="output-box">
+            <p class="section-title">4) 额外的建议:</p>
+            <pre class="suggestion">{{ extra_suggestions if extra_suggestions else '没有额外的建议.' }}</pre>
+        </div>
+
+        {% if ai_suggestions %}
+        <div class="output-box">
+            <p class="section-title">5) AI 的建议:</p>
+            <pre class="ai-suggestion">{{ ai_suggestions }}</pre>
+        </div>
+        {% endif %}
+
+        {% if no_suggestions and formatted_sql and explain_table %}
+        <div class="output-box success-suggestion">
+            <p class="section-title">分析结果:</p>
+            <pre>SQL 语句分析完成，当前 SQL 语句执行计划良好，没有额外的优化建议！</pre>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
