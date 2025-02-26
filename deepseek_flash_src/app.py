@@ -121,7 +121,8 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
 
     for row in explain_result:
         # 修改处：防止 table_name 为 None
-        table_name = row.get('table', '')  # 使用 get() 设置默认值为空字符串
+        #table_name = row.get('table', '')  # 使用 get() 设置默认值为空字符串
+        table_name = row.get('table') or ''
         if table_name.lower().startswith('<derived'):
             table_name = ""
         if table_name == "":
