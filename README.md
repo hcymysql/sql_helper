@@ -1,4 +1,12 @@
-# sql_helper - 输入SQL自动判断条件字段是否增加索引
+# sql_helper - 输入SQL自动给出索引优化建议+SQL重新建议
+
+#### 2025年2月26日更新：sqlai_helper 接入DeepSeek
+```
+第一步、先去 https://platform.deepseek.com/api_keys 申请密钥并充值1元，替换sql_deepseek.py文件里的密钥。
+第二步，运行：
+shell> pip3 install -r requirements.txt -i "http://mirrors.aliyun.com/pypi/simple" --trusted-host "mirrors.aliyun.com"
+shell> python3 app.py
+```
 
 #### 2025年2月20日更新：sqlai_helper 增加 Flask，无需部署PHP，可直接访问。
 ```
