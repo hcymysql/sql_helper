@@ -14,7 +14,7 @@ def optimize_sql(original_sql):
         str: 优化后的纯 SQL 查询语句。如果调用过程中发生错误，则返回包含错误信息的字符串。
     """
     try:
-        client = OpenAI(api_key="sk-bdf118cb5a86461189cfbec39a24c4f6", base_url="https://api.deepseek.com")
+        client = OpenAI(api_key="sk-xxxxxxxxxxxxxxxxxxxxxxxx", base_url="https://api.deepseek.com")
 
         # 输出调用信息 (可选，仅用于调试)
         print('\033[94m以下是调用的deepseek V3接口.\033[0m')
