@@ -1,4 +1,4 @@
-# 请先安装 OpenAI SDK: `pip3 install openai`
+# https://platform.deepseek.com/api_keys 申请密钥并充值1元
 
 from openai import OpenAI
 import re
