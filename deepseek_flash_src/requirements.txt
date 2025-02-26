@@ -1,0 +1,8 @@
+Flask
+PyMySQL
+sql-metadata
+tabulate
+rich
+PyYAML
+openai
+sqlparse
