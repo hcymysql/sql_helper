@@ -1,4 +1,4 @@
-# sql_helper - 输入SQL自动给出索引优化建议+SQL重新建议
+# sql_helper - 输入SQL自动给出索引优化建议+SQL重写建议
 
 #### 2025年2月26日更新：sqlai_helper 接入DeepSeek
 ```
