@@ -106,7 +106,7 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                     index_result = cur.fetchall()
                     if not index_result:
                         suggestion_text = "join联表查询，on关联字段必须增加索引！\n"
-                        suggestion_text += f"<span style=\"color: red;\">需要添加索引：ALTER TABLE {table_name} ADD INDEX idx_{on_column}({on_column});</span>\n"
+                        suggestion_text += f"<span style=\"color: red;\">\n需要添加索引：ALTER TABLE {table_name} ADD INDEX idx_{on_column}({on_column});</span>\n"
                         suggestion_text += f"【{table_name}】表 【{on_column}】字段，索引分析：\n"
                         index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
                                                            table_name=table_name, index_columns=on_column)
@@ -145,10 +145,10 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                         if Cardinality:
                             count_value = Cardinality[0]['count']
                             if where_clause_value is not None:
-                                suggestion_text = f"取出表 【{table_name}】 where条件表达式 【{where_clause_value}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
+                                suggestion_text = f"\n取出表 【{table_name}】 where条件表达式 【{where_clause_value}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
                                 index_suggestions.append(suggestion_text)
                             else:
-                                suggestion_text = f"取出表 【{table_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
+                                suggestion_text = f"\n取出表 【{table_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
                                 index_suggestions.append(suggestion_text)
                         else:
                             add_index_fields.append(where_field)
@@ -158,7 +158,7 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                         Cardinality = count_column_value(table_name, group_field, mysql_settings, sample_size)
                         if Cardinality:
                             count_value = Cardinality[0]['count']
-                            suggestion_text = f"取出表 【{table_name}】 group by条件字段 【{group_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
+                            suggestion_text = f"\n取出表 【{table_name}】 group by条件字段 【{group_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
                             index_suggestions.append(suggestion_text)
                         else:
                             add_index_fields.append(group_field)
@@ -168,7 +168,7 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                         Cardinality = count_column_value(table_name, order_field, mysql_settings, sample_size)
                         if Cardinality:
                             count_value = Cardinality[0]['count']
-                            suggestion_text = f"取出表 【{table_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
+                            suggestion_text = f"\n取出表 【{table_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
                             index_suggestions.append(suggestion_text)
                         else:
                             add_index_fields.append(order_field)
@@ -190,9 +190,9 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                         if not index_result:
                             suggestion_text = ""
                             if row['key'] is None:
-                                suggestion_text += f"<span style=\"color: #FFA500;\">建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});</span>\n"
+                                suggestion_text += f"<span style=\"color: #FFA500;\">\n建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});</span>\n"
                             elif row['key'] is not None and row['rows'] >= 1:
-                                suggestion_text += f"<span style=\"color: #FFA500;\">建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});</span>\n"
+                                suggestion_text += f"<span style=\"color: #FFA500;\">\n建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{index_name}({index_columns});</span>\n"
                             suggestion_text += f"\n【{table_name}】表 【{index_columns}】字段，索引分析：\n"
                             index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
                                                                table_name=table_name, index_columns=index_columns)
@@ -224,9 +224,9 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                         if index_result_list is None:
                             suggestion_text = ""
                             if row['key'] is None:
-                                suggestion_text += f"<span style=\"color: #FFA500;\">建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});</span>\n"
+                                suggestion_text += f"<span style=\"color: #FFA500;\">\n建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});</span>\n"
                             elif row['key'] is not None and row['rows'] >= 1:
-                                suggestion_text += f"<span style=\"color: #FFA500;\">建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});</span>\n"
+                                suggestion_text += f"<span style=\"color: #FFA500;\">\n建议添加索引：ALTER TABLE {table_name} ADD INDEX idx_{merged_name}({merged_columns});</span>\n"
                             suggestion_text += f"\n【{table_name}】表 【{merged_columns}】字段，索引分析：\n"
                             index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
                                                                table_name=table_name, index_columns=merged_columns)
@@ -280,10 +280,10 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                             if Cardinality:
                                 count_value = Cardinality[0]['count']
                                 if where_clause_value is not None:
-                                    suggestion_text = f"取出表 【{table_real_name}】 where条件表达式 【{where_clause_value}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
+                                    suggestion_text = f"\n取出表 【{table_real_name}】 where条件表达式 【{where_clause_value}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
                                     index_suggestions.append(suggestion_text)
                                 else:
-                                    suggestion_text = f"取出表 【{table_real_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
+                                    suggestion_text = f"\n取出表 【{table_real_name}】 where条件字段 【{where_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
                                     index_suggestions.append(suggestion_text)
                             else:
                                 add_index_fields.append(where_field)
@@ -297,7 +297,7 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                             Cardinality = count_column_value(table_real_name, group_field, mysql_settings, sample_size)
                             if Cardinality:
                                 count_value = Cardinality[0]['count']
-                                suggestion_text = f"取出表 【{table_real_name}】 group by条件字段 【{group_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
+                                suggestion_text = f"\n取出表 【{table_real_name}】 group by条件字段 【{group_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
                                 index_suggestions.append(suggestion_text)
                             else:
                                 add_index_fields.append(group_field)
@@ -311,7 +311,7 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                             Cardinality = count_column_value(table_real_name, order_field, mysql_settings, sample_size)
                             if Cardinality:
                                 count_value = Cardinality[0]['count']
-                                suggestion_text = f"取出表 【{table_real_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
+                                suggestion_text = f"\n取出表 【{table_real_name}】 order by条件字段 【{order_field}】 {sample_size} 条记录，重复的数据有：【{count_value}】 条，没有必要为该字段创建索引。\n"
                                 index_suggestions.append(suggestion_text)
                             else:
                                 add_index_fields.append(order_field)
@@ -330,9 +330,9 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                             if not index_result:
                                 suggestion_text = ""
                                 if row['key'] is None:
-                                    suggestion_text += f"<span style=\"color: #FFA500;\">建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});</span>\n"
+                                    suggestion_text += f"<span style=\"color: #FFA500;\">\n建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});</span>\n"
                                 elif row['key'] is not None and row['rows'] >= 1:
-                                    suggestion_text += f"<span style=\"color: #FFA500;\">建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});</span>\n"
+                                    suggestion_text += f"<span style=\"color: #FFA500;\">\n建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{index_name}({index_columns});</span>\n"
                                 suggestion_text += f"\n【{table_real_name}】表 【{index_columns}】字段，索引分析：\n"
                                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
                                                                    table_name=table_real_name, index_columns=index_columns)
@@ -363,9 +363,9 @@ def analyze_sql(sql_query, db_config, sample_size=100000):
                             if index_result_list is None:
                                 suggestion_text = ""
                                 if row['key'] is None:
-                                    suggestion_text += f"<span style=\"color: #FFA500;\">建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});</span>\n"
+                                    suggestion_text += f"<span style=\"color: #FFA500;\">\n建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});</span>\n"
                                 elif row['key'] is not None and row['rows'] >= 1:
-                                    suggestion_text += f"<span style=\"color: #FFA500;\">建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});</span>\n"
+                                    suggestion_text += f"<span style=\"color: #FFA500;\">\n建议添加索引：ALTER TABLE {table_real_name} ADD INDEX idx_{merged_name}({merged_columns});</span>\n"
                                 suggestion_text += f"\n【{table_real_name}】表 【{merged_columns}】字段，索引分析：\n"
                                 index_static = execute_index_query(mysql_settings, database=mysql_settings["database"],
                                                                    table_name=table_real_name, index_columns=merged_columns)
