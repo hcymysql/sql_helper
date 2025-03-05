@@ -3,139 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <title>SQLAI Helper 工具</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
     <style>
-      body {
-          font-family: 'Arial', sans-serif;
-          background: #f1f1f1;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          justify-content: center;
-          align-items: flex-start;
-          height: 100vh;
-          color: #333;
-      }
-      .container {
-          background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          width: 80%;
-          max-width: 900px;
-          padding: 30px;
-          margin-top: -30px;
-      }
-      h1 {
-          text-align: center;
-          color: #007bff;
-          margin-bottom: 20px;
-      }
-
-      /* Input fields and labels */
-      .config-box {
-          background: #fafafa;
-          padding: 20px;
-          border-radius: 8px;
-          margin-bottom: 30px;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-      .config-box label {
-          font-weight: bold;
-          margin-top: 5px;
-          display: block;
-      }
-
-      /* Input fields in one line */
-      .inline-inputs {
-          display: flex;
-          justify-content: space-between;
-          gap: 10px;
-      }
-      .inline-inputs input {
-          width: 50%; /* Set width to fit inputs in the same row */
-      }
-
-      .config-box textarea {
-          width: 100%;
-          height: 150px;
-          padding: 12px;
-          margin: 8px 0;
-          border-radius: 5px;
-          border: 1px solid #ddd;
-          font-size: 16px;
-      }
-
-      .button-container {
-          text-align: center;
-      }
-      button {
-          padding: 12px 24px;
-          background-color: #007bff;
-          border: none;
-          color: white;
-          font-size: 16px;
-          border-radius: 5px;
-          cursor: pointer;
-          transition: background-color: 0.3s;
-      }
-      button:hover {
-          background-color: #0056b3;
-      }
-
-      /* Output boxes */
-      .output-box {
-          background: #f9f9f9;
-          border-radius: 8px;
-          padding: 15px;
-          margin-top: 10px;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-      .section-title {
-          font-weight: bold;
-          font-size: 18px;
-          color: #333;
-          margin-bottom: 10px;
-      }
-      .suggestion {
-          /*color: darkorange;  移除，因为下面会更精细地控制颜色 */
-          white-space: pre-wrap;
-          word-wrap: break-word;
-      }
-      .error {
-          color: red;
-      }
-      .ai-suggestion {
-          color: green;
-      }
-      .success-suggestion {
-          background: #d4edda;
-          color: #155724;
-          padding: 10px;
-          border-radius: 5px;
-      }
-
-      /* 新增的样式 */
-      .arrow {
-          color: #28a745; /* 绿色箭头 */
-          font-weight: bold;
-      }
-      .bold-green {
-          color: #28a745; /* 绿色文本 */
-          font-weight: bold;
-      }
-       .bold-yellow {
-          color: #ffc107;  /*黄色文本*/
-          font-weight: bold;
-      }
-      .red-text{
-          color: red;
-          font-weight: bold;
-      }
-      .highlight-suggestion {
-        font-size: 1.2em; /* 增大字体 */
-        color: red;       /* 变为红色 */
-        font-weight: bold;
-    }
-
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f1f1f1;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            color: #333;
+            overflow-y: auto;
+        }
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 900px;
+            padding: 30px;
+            margin-top: -40px;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .config-box {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .config-box label {
+            font-weight: bold;
+            margin-top: 5px;
+            display: block;
+        }
+        .inline-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .inline-inputs input {
+            flex: 1;
+            min-width: 200px;
+        }
+        .config-box textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            resize: vertical;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output-box {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .suggestion, .ai-suggestion, .error {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            color: red;
+        }
+        .ai-suggestion {
+            color: #007bff;
+        }
+        .success-suggestion {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        pre.language-sql {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        pre.language-sql code {
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .ai-sql-table td {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -144,85 +149,97 @@
 
         <div class="config-box">
             <form method="post">
-                <label for="sql_query">输入 SQL 查询语句:</label>
-                <textarea id="sql_query" name="sql_query" placeholder="请输入 SQL 查询语句">{{ sql_query or '' }}</textarea>
+                <label for="sql_query">输入 SQL 自动给出索引优化建议 + SQL重写建议:</label>
+                <textarea id="sql_query" name="sql_query" placeholder="请输入 SQL 查询语句" required>{{ sql_query or '' }}</textarea>
 
                 <p><strong>数据库连接配置</strong> (手动填写数据库参数)</p>
 
                 <div class="inline-inputs">
                     <div>
                         <label for="host">MySQL 主机名:</label>
-                        <input type="text" id="host" name="host" placeholder="MySQL 主机名" value="{{ host or '' }}">
+                        <input type="text" id="host" name="host" placeholder="MySQL 主机名" value="{{ host or '' }}" required>
                     </div>
                     <div>
                         <label for="port">MySQL 端口:</label>
-                        <input type="number" id="port" name="port" placeholder="MySQL 端口 (默认: 3306)" value="{{ port or 3306 }}">
+                        <input type="number" id="port" name="port" placeholder="MySQL 端口 (默认: 3306)" value="{{ port or 3306 }}" required>
                     </div>
                     <div>
                         <label for="user">MySQL 用户名:</label>
-                        <input type="text" id="user" name="user" placeholder="MySQL 用户名" value="{{ user or '' }}">
+                        <input type="text" id="user" name="user" placeholder="MySQL 用户名" value="{{ user or '' }}" required>
                     </div>
                     <div>
                         <label for="password">MySQL 密码:</label>
-                        <input type="password" id="password" name="password" placeholder="MySQL 密码" value="{{ password or '' }}">
+                        <input type="password" id="password" name="password" placeholder="MySQL 密码" value="{{ password or '' }}" required>
                     </div>
                     <div>
                         <label for="database">数据库名:</label>
-                        <input type="text" id="database" name="database" placeholder="数据库名" value="{{ database or '' }}">
+                        <input type="text" id="database" name="database" placeholder="数据库名" value="{{ database or '' }}" required>
                     </div>
                 </div>
 
                 <div class="button-container">
                     <br>
-                    <button type="submit">分析 SQL</button>
+                    <button type="submit" id="submitButton" onclick="showLoading()">分析 SQL</button>
                 </div>
             </form>
         </div>
 
+        <!-- 加载动画 -->
+        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+            <img src="https://cdnjs.cloudflare.com/ajax/libs/loading.io/1.0.10/assets/img/loading.svg" alt="加载中..." width="50" height="50">
+            <p>正在分析，请稍候...</p>
+        </div>
+
         {% if error %}
-        <div class="output-box error">
-            <p><strong>错误信息:</strong></p>
-            <pre>{{ error }}</pre>
+        <div class="output-box error" id="output-start">
+            <p class="section-title">错误信息:</p>
+            <pre class="language-sql"><code>{{ error|default('<span class="red-text">未检测到错误</span>')|safe }}</code></pre>
         </div>
         {% endif %}
 
         {% if formatted_sql %}
-        <div class="output-box">
+        <div class="output-box" id="output-start">
             <p class="section-title">1) 你刚才输入的 SQL 语句是:</p>
-            <pre>{{ formatted_sql }}</pre>
+            <pre class="language-sql"><code>{{ formatted_sql|default('<span class="red-text">无输入 SQL</span>')|safe }}</code></pre>
         </div>
         {% endif %}
 
         {% if explain_table %}
         <div class="output-box">
             <p class="section-title">2) EXPLAIN 执行计划:</p>
-            <pre>{{ explain_table }}</pre>
+            {{ explain_table|safe }}
         </div>
         {% endif %}
 
-      {% if index_suggestions %}
-          <div class="output-box">
-              <p class="section-title">3) 索引优化建议:</p>
-              {% set suggestions = index_suggestions.split('\n') %}
-              {% for suggestion_line in suggestions %}
-                  {% if '建议添加索引' in suggestion_line %}
-                      <p><span class="highlight-suggestion">{{ suggestion_line|replace('\033[93m', '')|replace('\033[0m', '') }}</span></p>
-                  {% else %}
-                      <pre class="suggestion">{% if '\u2192' in suggestion_line %}<span class="arrow">{{ suggestion_line|replace('\u2192', '→')|replace('\033[1;92m', '')|replace('\033[0m', '') }}</span>{% elif '\033[1;92m' in suggestion_line %}<span class="bold-green">{{ suggestion_line|replace('\033[1;92m', '')|replace('\033[0m', '') }}</span>{% elif '\033[93m' in suggestion_line %}<span class="bold-yellow">{{ suggestion_line|replace('\033[93m', '')|replace('\033[0m', '') }}</span>{% elif '\033[91m' in suggestion_line %}<span class="red-text">{{ suggestion_line|replace('\033[91m', '')|replace('\033[0m', '') }}</span>{% else %}{{ suggestion_line }}{% endif %}</pre>
-                  {% endif %}
-              {% endfor %}
-          </div>
-      {% endif %}
+        {% if index_suggestions %}
+        <div class="output-box">
+            <p class="section-title">3) 索引优化建议:</p>
+            <pre class="language-sql"><code>{{ index_suggestions|default('<span class="red-text">无索引优化建议</span>')|safe }}</code></pre>
+        </div>
+        {% endif %}
 
+        {% if extra_suggestions %}
         <div class="output-box">
             <p class="section-title">4) 额外的建议:</p>
-            <pre class="suggestion">{{ extra_suggestions|replace('\033[91m', '<span style="color: red; font-weight: bold;">')|replace('\033[0m', '</span>') }}</pre>
+            <pre class="language-sql"><code>{{ extra_suggestions|default('<span class="red-text">无额外建议</span>')|safe }}</code></pre>
         </div>
+        {% endif %}
 
         {% if ai_suggestions %}
         <div class="output-box">
-            <p class="section-title">5) AI 的建议:</p>
-            <pre class="ai-suggestion">{{ ai_suggestions }}</pre>
+            <p class="section-title">5) DeepSeek 的建议:</p>
+            <table class="ai-sql-table">
+                <thead>
+                    <tr>
+                        <th>优化后的 SQL 语句</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ ai_suggestions|default('暂无 AI 建议')|safe }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         {% endif %}
 
@@ -233,5 +250,43 @@
         </div>
         {% endif %}
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script>
+        // 显示加载动画并禁用按钮
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('submitButton').disabled = true;
+        }
+
+        // 页面加载完成后初始化状态
+        window.onload = function() {
+            Prism.highlightAll();
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('submitButton').disabled = false;
+
+            // 如果有输出结果，滚动到 #output-start
+            var outputStart = document.getElementById('output-start');
+            if (outputStart) {
+                outputStart.scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+
+        // 根据后端传递的 is_processing 控制加载动画
+        {% if is_processing %}
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('submitButton').disabled = true;
+        {% else %}
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('submitButton').disabled = false;
+
+            // 处理完成后滚动到输出结果
+            var outputStart = document.getElementById('output-start');
+            if (outputStart) {
+                outputStart.scrollIntoView({ behavior: 'smooth' });
+            }
+        {% endif %}
+    </script>
 </body>
 </html>
