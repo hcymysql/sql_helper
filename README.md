@@ -2,6 +2,12 @@
 
 #### 2025年2月26日更新：sqlai_helper 接入DeepSeek
 ```
+注：openai库需要调用ssl，由于python3.10之后版本不在支持libressl使用ssl，需要用openssl1.1.1版本或者更高版本
+
+参见：python3.10编译安装报SSL失败解决方法
+https://blog.csdn.net/mdh17322249/article/details/123966953
+```
+```
 第一步、先去 https://platform.deepseek.com/api_keys 申请密钥并充值1元，替换sql_deepseek.py文件里的密钥。
 第二步，运行：
 shell> pip3 install -r requirements.txt -i "http://mirrors.aliyun.com/pypi/simple" --trusted-host "mirrors.aliyun.com"
