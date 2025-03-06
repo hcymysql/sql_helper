@@ -141,6 +141,19 @@
             font-family: monospace;
             color: #0056b3;
         }
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -148,8 +161,8 @@
         <h1>SQLAI Helper 工具</h1>
 
         <div class="config-box">
-            <form method="post">
-                <label for="sql_query">输入 SQL 查询语句:</label>
+            <form method="post" id="sqlForm">
+                <label for="sql_query">输入 SQL 自动给出索引优化建议 + SQL重写建议:</label>
                 <textarea id="sql_query" name="sql_query" placeholder="请输入 SQL 查询语句" required>{{ sql_query or '' }}</textarea>
 
                 <p><strong>数据库连接配置</strong> (手动填写数据库参数)</p>
@@ -179,13 +192,13 @@
 
                 <div class="button-container">
                     <br>
-                    <button type="submit" id="submitButton" onclick="showLoading()">分析 SQL</button>
+                    <button type="submit" id="submitButton">分析 SQL</button>
                 </div>
             </form>
         </div>
 
         <!-- 加载动画 -->
-        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+        <div id="loading" style="display: none;">
             <img src="https://cdnjs.cloudflare.com/ajax/libs/loading.io/1.0.10/assets/img/loading.svg" alt="加载中..." width="50" height="50">
             <p>正在分析，请稍候...</p>
         </div>
@@ -260,11 +273,16 @@
             document.getElementById('submitButton').disabled = true;
         }
 
+        // 隐藏加载动画并启用按钮
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('submitButton').disabled = false;
+        }
+
         // 页面加载完成后初始化状态
         window.onload = function() {
             Prism.highlightAll();
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('submitButton').disabled = false;
+            hideLoading(); // 确保页面加载时加载动画关闭
 
             // 如果有输出结果，滚动到 #output-start
             var outputStart = document.getElementById('output-start');
@@ -273,20 +291,33 @@
             }
         };
 
-        // 根据后端传递的 is_processing 控制加载动画
-        {% if is_processing %}
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('submitButton').disabled = true;
-        {% else %}
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('submitButton').disabled = false;
+        // 表单提交时处理加载动画
+        document.getElementById('sqlForm').addEventListener('submit', function(event) {
+            showLoading(); // 显示加载动画
 
-            // 处理完成后滚动到输出结果
-            var outputStart = document.getElementById('output-start');
-            if (outputStart) {
-                outputStart.scrollIntoView({ behavior: 'smooth' });
-            }
+            // 添加超时机制，5秒后强制关闭加载动画
+            const timeoutId = setTimeout(() => {
+                hideLoading();
+                console.warn('请求超时，加载动画已强制关闭');
+            }, 5000);
+
+            // 监听表单提交后的响应（注意：这里假设使用的是普通表单提交）
+            // 由于是 POST 请求，我们依赖后端渲染新页面
+            // 在新页面加载时，hideLoading 会在 window.onload 中触发
+        });
+
+        // 确保错误信息加载后滚动到可见区域
+        {% if error %}
+            window.onload = function() {
+                Prism.highlightAll();
+                hideLoading(); // 错误时关闭加载动画
+                var outputStart = document.getElementById('output-start');
+                if (outputStart) {
+                    outputStart.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
         {% endif %}
     </script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'91c011df4aef12d5',t:'MTc0MTI0NTQwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
