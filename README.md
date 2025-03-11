@@ -10,6 +10,7 @@ https://blog.csdn.net/mdh17322249/article/details/123966953
 ```
 第一步、先去 https://platform.deepseek.com/api_keys 申请密钥并充值1元，替换sql_deepseek.py文件里的密钥。
 第二步，运行：
+shell> cd sql_helper_1.1/deepseek_flash_src/
 shell> pip3 install -r requirements.txt -i "http://mirrors.aliyun.com/pypi/simple" --trusted-host "mirrors.aliyun.com"
 shell> python3 app.py
  * Running on http://192.168.137.131:5000
